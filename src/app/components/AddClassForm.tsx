@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import Turnstile, { TurnstileRef } from './Turnstile';
+import { useState, useRef, useEffect } from 'react';
+import { getTurnstileToken, clearTurnstileToken } from './GlobalTurnstile';
 
 interface AddClassFormProps {
   onSubmit: (data: { className: string; classCode: string; average: number }) => void;
@@ -15,9 +15,16 @@ export default function AddClassForm({ onSubmit, onCancel, initialData }: AddCla
   const [average, setAverage] = useState(initialData?.average.toString() || '');
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const turnstileRef = useRef<TurnstileRef>(null);
   
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
+
+  // Get token from sessionStorage on mount
+  useEffect(() => {
+    const token = getTurnstileToken();
+    if (token) {
+      setTurnstileToken(token);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,10 +40,14 @@ export default function AddClassForm({ onSubmit, onCancel, initialData }: AddCla
 
     // Verify Turnstile token if site key is configured
     if (turnstileSiteKey) {
-      if (!turnstileToken) {
-        setError('Please complete the verification challenge');
+      // Get fresh token from sessionStorage
+      const currentToken = getTurnstileToken();
+      if (!currentToken) {
+        setError('Please complete the verification challenge that appears when you first visit the site');
         return;
       }
+      // Use the token from sessionStorage
+      setTurnstileToken(currentToken);
 
       // Verify token with our API
       try {
@@ -45,26 +56,21 @@ export default function AddClassForm({ onSubmit, onCancel, initialData }: AddCla
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ token: turnstileToken }),
+          body: JSON.stringify({ token: currentToken }),
         });
 
         const verifyResult = await verifyResponse.json();
 
         if (!verifyResult.success) {
-          setError('Verification failed. Please try again.');
+          // Token invalid, clear it so user can verify again
+          clearTurnstileToken();
           setTurnstileToken(null);
-          if (turnstileRef.current) {
-            turnstileRef.current.resetTurnstile();
-          }
+          setError('Verification expired. Please refresh the page to verify again.');
           return;
         }
       } catch (verifyError) {
         console.error('Turnstile verification error:', verifyError);
         setError('Verification error. Please try again.');
-        setTurnstileToken(null);
-        if (turnstileRef.current) {
-          turnstileRef.current.resetTurnstile();
-        }
         return;
       }
     }
@@ -74,12 +80,7 @@ export default function AddClassForm({ onSubmit, onCancel, initialData }: AddCla
     setClassName('');
     setClassCode('');
     setAverage('');
-    setTurnstileToken(null);
-    
-    // Reset Turnstile
-    if (turnstileRef.current) {
-      turnstileRef.current.resetTurnstile();
-    }
+    // Don't clear token - keep it for future submissions
   };
 
   return (
@@ -144,26 +145,12 @@ export default function AddClassForm({ onSubmit, onCancel, initialData }: AddCla
           </div>
         )}
 
-        {/* Turnstile Widget */}
-        {turnstileSiteKey && (
-          <div className="flex justify-center">
-            <Turnstile
-              ref={turnstileRef}
-              siteKey={turnstileSiteKey}
-              onVerify={(token) => {
-                setTurnstileToken(token);
-                setError(null);
-              }}
-              onError={() => {
-                setTurnstileToken(null);
-                setError('Verification failed. Please try again.');
-              }}
-              onExpire={() => {
-                setTurnstileToken(null);
-              }}
-              theme="auto"
-              size="normal"
-            />
+        {/* Show message if verification needed */}
+        {turnstileSiteKey && !turnstileToken && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <p className="text-xs text-amber-800 text-center">
+              <span className="font-semibold">Note:</span> Please complete the verification challenge that appears when you first visit the site to submit forms.
+            </p>
           </div>
         )}
 

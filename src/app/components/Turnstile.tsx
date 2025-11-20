@@ -181,8 +181,20 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
     );
   }
 
+  // Always show container, even if widget hasn't loaded yet
   return (
-    <div ref={containerRef} className={className} style={{ minHeight: '65px' }} />
+    <div 
+      ref={containerRef} 
+      className={className} 
+      style={{ minHeight: '65px', minWidth: '300px' }}
+      data-testid="turnstile-container"
+    >
+      {!isLoaded && (
+        <div className="text-xs text-gray-400 text-center py-4">
+          Loading verification...
+        </div>
+      )}
+    </div>
   );
 });
 

@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "Track and manage your class averages at Western University",
 };
 
+import GlobalTurnstile from './components/GlobalTurnstile';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,6 +29,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <GlobalTurnstile />
         {children}
       </body>
     </html>
