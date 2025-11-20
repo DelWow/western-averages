@@ -29,6 +29,82 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Deploy on Netlify
+
+This project is configured to deploy on Netlify using the Next.js Runtime.
+
+### Prerequisites
+
+1. A Netlify account (sign up at [netlify.com](https://www.netlify.com))
+2. Your code pushed to a Git repository (GitHub, GitLab, or Bitbucket)
+
+### Deployment Steps
+
+#### Option 1: Deploy via Netlify UI (Recommended)
+
+1. **Push your code to Git**
+   ```bash
+   git add .
+   git commit -m "Add Netlify configuration"
+   git push origin main
+   ```
+
+2. **Connect to Netlify**
+   - Go to [app.netlify.com](https://app.netlify.com)
+   - Click "Add new site" → "Import an existing project"
+   - Connect your Git provider and select this repository
+
+3. **Configure Build Settings**
+   - Build command: `npm run build` (should be auto-detected)
+   - Publish directory: `.next` (should be auto-detected)
+   - The `netlify.toml` file will automatically configure these settings
+
+4. **Set Environment Variables**
+   - In Netlify dashboard, go to Site settings → Environment variables
+   - Add the following variables:
+     - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+     - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+
+5. **Deploy**
+   - Click "Deploy site"
+   - Netlify will automatically install dependencies, build, and deploy your site
+
+#### Option 2: Deploy via Netlify CLI
+
+1. **Install Netlify CLI**
+   ```bash
+   npm install -g netlify-cli
+   ```
+
+2. **Login to Netlify**
+   ```bash
+   netlify login
+   ```
+
+3. **Initialize and Deploy**
+   ```bash
+   netlify init
+   netlify deploy --prod
+   ```
+
+4. **Set Environment Variables**
+   ```bash
+   netlify env:set NEXT_PUBLIC_SUPABASE_URL "your-supabase-url"
+   netlify env:set NEXT_PUBLIC_SUPABASE_ANON_KEY "your-supabase-anon-key"
+   ```
+
+### Post-Deployment
+
+- Your site will be available at `https://your-site-name.netlify.app`
+- Netlify will automatically deploy on every push to your main branch
+- You can configure a custom domain in Site settings → Domain management
+
+### Troubleshooting
+
+- If build fails, check the build logs in the Netlify dashboard
+- Ensure all environment variables are set correctly
+- Verify your Supabase project is accessible and the keys are correct
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
