@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '../components/Header';
 import ClassCard from '../components/ClassCard';
@@ -14,36 +14,41 @@ interface Course {
   department: string;
   level: number;
   avg_grade: number | null;
+  unverified_average: number | null;
   created_at: string;
 }
 
-type SortOption = 'letter-grade' | 'avg-low-high' | 'avg-high-low' | 'alphabetical';
+interface SubjectWithCount {
+  name: string;
+  count: number;
+}
+
+type SortOption = 'letter-grade' | 'avg-low-high' | 'avg-high-low' | 'unverified-low-high' | 'unverified-high-low' | 'alphabetical';
 
 export default function SubjectPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedSubjectParam = searchParams.get('subject');
 
-  const [subjects, setSubjects] = useState<string[]>([]);
+  const [subjects, setSubjects] = useState<SubjectWithCount[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<string>(selectedSubjectParam || '');
   const [loading, setLoading] = useState(true);
   const [sortOption, setSortOption] = useState<SortOption>('avg-high-low');
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const [showSubjectMenu, setShowSubjectMenu] = useState(false);
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  const [subjectSearch, setSubjectSearch] = useState('');
 
-  // Load all courses and extract unique subjects
+  // Load all courses and extract unique subjects with counts
   useEffect(() => {
     async function fetchData() {
       try {
         const supabase = createClient();
         let allCourses: Course[] = [];
         let from = 0;
-        const pageSize = 1000; // Supabase default limit
+        const pageSize = 1000;
         
-        // Fetch all courses using pagination
         while (true) {
           const { data, error } = await supabase
             .from('courses')
@@ -60,7 +65,6 @@ export default function SubjectPage() {
             allCourses = [...allCourses, ...data];
             from += pageSize;
             
-            // If we got fewer rows than requested, we've reached the end
             if (data.length < pageSize) {
               break;
             }
@@ -69,19 +73,92 @@ export default function SubjectPage() {
           }
         }
 
-        // Deduplicate courses by ID (keep first occurrence)
+        // Deduplicate courses by ID
         const uniqueCourses = Array.from(
           new Map(allCourses.map(course => [course.id, course])).values()
         );
 
-        setCourses(uniqueCourses);
-        // Extract unique subjects
-        const uniqueSubjects = Array.from(new Set(uniqueCourses.map(c => c.department).filter(Boolean))).sort();
-        setSubjects(uniqueSubjects);
+        // Fetch unverified averages for all courses
+        const courseIdsSet = new Set(uniqueCourses.map(c => c.id));
+        const unverifiedAveragesMap = new Map<number, number>();
+        
+        // Fetch all student averages in batches (without filtering by course_id to avoid limits)
+        let allSubmissions: { course_id: number; grade: number }[] = [];
+        let submissionsFrom = 0;
+        const submissionsPageSize = 1000;
+        
+        while (true) {
+          const { data: submissionsData, error: submissionsError } = await supabase
+            .from('student_averages')
+            .select('course_id, grade')
+            .range(submissionsFrom, submissionsFrom + submissionsPageSize - 1);
+
+          if (submissionsError) {
+            console.error('Error fetching student averages:', submissionsError);
+            break;
+          }
+
+          if (submissionsData && submissionsData.length > 0) {
+            // Filter to only include courses we care about
+            const filteredSubmissions = submissionsData.filter(s => courseIdsSet.has(s.course_id));
+            allSubmissions = [...allSubmissions, ...filteredSubmissions];
+            submissionsFrom += submissionsPageSize;
+            
+            if (submissionsData.length < submissionsPageSize) {
+              break;
+            }
+          } else {
+            break;
+          }
+        }
+
+        // Calculate unverified averages per course
+        const courseGradesMap = new Map<number, number[]>();
+        allSubmissions.forEach(submission => {
+          const courseId = submission.course_id;
+          const grade = typeof submission.grade === 'string' ? parseFloat(submission.grade) : submission.grade;
+          if (!isNaN(grade) && isFinite(grade)) {
+            if (!courseGradesMap.has(courseId)) {
+              courseGradesMap.set(courseId, []);
+            }
+            courseGradesMap.get(courseId)!.push(grade);
+          }
+        });
+
+        // Calculate averages
+        courseGradesMap.forEach((grades, courseId) => {
+          if (grades.length > 0) {
+            const sum = grades.reduce((a, b) => a + b, 0);
+            const average = sum / grades.length;
+            unverifiedAveragesMap.set(courseId, parseFloat(average.toFixed(2)));
+          }
+        });
+
+        // Add unverified averages to courses
+        const coursesWithUnverified = uniqueCourses.map(course => ({
+          ...course,
+          unverified_average: unverifiedAveragesMap.get(course.id) || null
+        }));
+
+        setCourses(coursesWithUnverified);
+        
+        // Calculate subject counts
+        const subjectMap = new Map<string, number>();
+        coursesWithUnverified.forEach(course => {
+          if (course.department) {
+            subjectMap.set(course.department, (subjectMap.get(course.department) || 0) + 1);
+          }
+        });
+
+        const subjectsWithCounts: SubjectWithCount[] = Array.from(subjectMap.entries())
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        setSubjects(subjectsWithCounts);
         
         // If a subject is selected from URL, filter courses
         if (selectedSubjectParam) {
-          const filtered = uniqueCourses.filter(c => c.department === selectedSubjectParam);
+          const filtered = coursesWithUnverified.filter(c => c.department === selectedSubjectParam);
           setFilteredCourses(filtered);
           setSelectedSubject(selectedSubjectParam);
         }
@@ -100,28 +177,36 @@ export default function SubjectPage() {
     if (selectedSubject) {
       const filtered = courses.filter(c => c.department === selectedSubject);
       setFilteredCourses(filtered);
-      // Update URL without reloading
       router.replace(`/subject?subject=${encodeURIComponent(selectedSubject)}`, { scroll: false });
     } else {
       setFilteredCourses([]);
+      router.replace('/subject', { scroll: false });
     }
   }, [selectedSubject, courses, router]);
 
-  // Close menus when clicking outside
+  // Filter subjects based on search
+  const filteredSubjects = useMemo(() => {
+    if (!subjectSearch.trim()) return subjects;
+    const searchLower = subjectSearch.toLowerCase();
+    return subjects.filter(subject => 
+      subject.name.toLowerCase().includes(searchLower)
+    );
+  }, [subjects, subjectSearch]);
+
+  // Close sort menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('.sort-menu-container') && !target.closest('.subject-menu-container')) {
+      if (!target.closest('.sort-menu-container')) {
         setShowSortMenu(false);
-        setShowSubjectMenu(false);
       }
     };
 
-    if (showSortMenu || showSubjectMenu) {
+    if (showSortMenu) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [showSortMenu, showSubjectMenu]);
+  }, [showSortMenu]);
 
   // Helper function to get letter grade from numeric grade
   const getGradeLetter = (grade: number | null): string => {
@@ -166,6 +251,30 @@ export default function SubjectPage() {
         const avgB = b.avg_grade ?? -Infinity;
         return avgB - avgA;
       }
+      case 'unverified-low-high': {
+        const avgA = a.unverified_average ?? Infinity;
+        const avgB = b.unverified_average ?? Infinity;
+        // If both are Infinity (null), sort by verified average or alphabetically
+        if (avgA === Infinity && avgB === Infinity) {
+          if (a.avg_grade !== null && b.avg_grade !== null) {
+            return a.avg_grade - b.avg_grade;
+          }
+          return a.name.localeCompare(b.name);
+        }
+        return avgA - avgB;
+      }
+      case 'unverified-high-low': {
+        const avgA = a.unverified_average ?? -Infinity;
+        const avgB = b.unverified_average ?? -Infinity;
+        // If both are -Infinity (null), sort by verified average or alphabetically
+        if (avgA === -Infinity && avgB === -Infinity) {
+          if (a.avg_grade !== null && b.avg_grade !== null) {
+            return b.avg_grade - a.avg_grade;
+          }
+          return a.name.localeCompare(b.name);
+        }
+        return avgB - avgA;
+      }
       case 'alphabetical': {
         return a.name.localeCompare(b.name);
       }
@@ -176,10 +285,28 @@ export default function SubjectPage() {
 
   const sortOptions: { value: SortOption; label: string }[] = [
     { value: 'letter-grade', label: 'Letter Grade' },
-    { value: 'avg-low-high', label: 'Average: Lowest to Highest' },
-    { value: 'avg-high-low', label: 'Average: Highest to Lowest' },
+    { value: 'avg-low-high', label: 'Verified Average: Lowest to Highest' },
+    { value: 'avg-high-low', label: 'Verified Average: Highest to Lowest' },
+    { value: 'unverified-low-high', label: 'Unverified Average: Lowest to Highest' },
+    { value: 'unverified-high-low', label: 'Unverified Average: Highest to Lowest' },
     { value: 'alphabetical', label: 'Alphabetical' },
   ];
+
+  const handleSubjectClick = (subjectName: string) => {
+    if (selectedSubject === subjectName) {
+      // Deselect if clicking the same subject
+      setSelectedSubject('');
+    } else {
+      setSelectedSubject(subjectName);
+    }
+    // Scroll to courses section
+    setTimeout(() => {
+      const coursesSection = document.getElementById('courses-section');
+      if (coursesSection) {
+        coursesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
 
   return (
     <div className="min-h-screen bg-[#faf9f7] relative">
@@ -204,63 +331,96 @@ export default function SubjectPage() {
           <p className="text-gray-600 text-lg font-light">Select a subject to explore its courses</p>
         </div>
 
-        {/* Subject Selection */}
+        {/* Subject Selection Section */}
         <div className="mb-10">
-          <div className="relative subject-menu-container">
-            <button
-              onClick={() => setShowSubjectMenu(!showSubjectMenu)}
-              className="btn-primary text-white px-6 py-3.5 rounded-xl hover:shadow-lg transition-all flex items-center gap-2.5 shadow-sm w-full md:w-auto font-medium text-sm"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          {/* Search Bar */}
+          <div className="mb-6">
+            <div className="relative">
+              <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              {selectedSubject ? `Subject: ${selectedSubject}` : 'Select a Subject'}
-              <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {showSubjectMenu && (
-              <div className="absolute left-0 mt-2 w-full md:w-72 bg-white rounded-xl shadow-2xl border border-gray-100 z-20 overflow-hidden max-h-96 overflow-y-auto">
-                {subjects.length === 0 ? (
-                  <div className="px-5 py-4 text-gray-500 text-center font-medium">No subjects available</div>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => {
-                        setSelectedSubject('');
-                        setShowSubjectMenu(false);
-                        router.replace('/subject', { scroll: false });
-                      }}
-                      className={`w-full text-left px-5 py-3.5 hover:bg-purple-50 transition-colors text-sm ${
-                        !selectedSubject ? 'bg-purple-100 text-purple-700 font-semibold' : 'text-gray-700 font-medium'
-                      }`}
-                    >
-                      All Subjects
-                    </button>
-                    {subjects.map((subject) => (
-                      <button
-                        key={subject}
-                        onClick={() => {
-                          setSelectedSubject(subject);
-                          setShowSubjectMenu(false);
-                        }}
-                        className={`w-full text-left px-5 py-3.5 hover:bg-purple-50 transition-colors text-sm ${
-                          selectedSubject === subject ? 'bg-purple-100 text-purple-700 font-semibold' : 'text-gray-700 font-medium'
-                        }`}
-                      >
-                        {subject}
-                      </button>
-                    ))}
-                  </>
-                )}
-              </div>
-            )}
+              <input
+                type="text"
+                placeholder="Search subjects..."
+                value={subjectSearch}
+                onChange={(e) => setSubjectSearch(e.target.value)}
+                className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+              />
+              {subjectSearch && (
+                <button
+                  onClick={() => setSubjectSearch('')}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* Selected Subject Badge */}
+          {selectedSubject && (
+            <div className="mb-6 flex items-center gap-3 flex-wrap">
+              <span className="text-sm text-gray-600 font-medium">Selected:</span>
+              <button
+                onClick={() => setSelectedSubject('')}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-semibold hover:bg-purple-200 transition-colors"
+              >
+                {selectedSubject}
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          {/* Subjects Grid */}
+          {loading ? (
+            <div className="card-elevated rounded-xl p-16 text-center">
+              <div className="animate-spin rounded-full h-14 w-14 border-[3px] border-purple-200 border-t-purple-600 mx-auto mb-5"></div>
+              <p className="text-gray-600 font-medium">Loading subjects...</p>
+            </div>
+          ) : filteredSubjects.length === 0 ? (
+            <div className="card-elevated rounded-xl p-16 text-center">
+              <svg className="w-20 h-20 text-gray-300 mx-auto mb-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">No subjects found</h3>
+              <p className="text-gray-500">
+                {subjectSearch ? `No subjects match "${subjectSearch}"` : 'No subjects available'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {filteredSubjects.map((subject) => {
+                const isSelected = selectedSubject === subject.name;
+                return (
+                  <button
+                    key={subject.name}
+                    onClick={() => handleSubjectClick(subject.name)}
+                    className={`card-elevated rounded-xl p-4 text-left transition-all ${
+                      isSelected
+                        ? 'bg-purple-600 text-white border-2 border-purple-700 shadow-lg transform scale-105'
+                        : 'bg-white text-gray-900 hover:bg-purple-50 hover:border-purple-200 border-2 border-transparent'
+                    }`}
+                  >
+                    <div className="font-bold text-base mb-1 truncate" title={subject.name}>
+                      {subject.name}
+                    </div>
+                    <div className={`text-sm ${isSelected ? 'text-purple-100' : 'text-gray-500'}`}>
+                      {subject.count} {subject.count === 1 ? 'course' : 'courses'}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Show courses only if a subject is selected */}
+        {/* Courses Section */}
         {selectedSubject && (
-          <>
+          <div id="courses-section" className="mb-10">
             <div className="mb-8 flex items-start justify-between flex-wrap gap-6">
               <div className="max-w-2xl">
                 <h2 className="text-3xl font-black text-gray-900 mb-2 heading-section">
@@ -338,13 +498,8 @@ export default function SubjectPage() {
               </div>
             </div>
 
-            {/* Courses Grid */}
-            {loading ? (
-              <div className="card-elevated rounded-xl p-16 text-center">
-                <div className="animate-spin rounded-full h-14 w-14 border-[3px] border-purple-200 border-t-purple-600 mx-auto mb-5"></div>
-                <p className="text-gray-600 font-medium">Loading courses...</p>
-              </div>
-            ) : filteredCourses.length === 0 ? (
+            {/* Courses Display */}
+            {filteredCourses.length === 0 ? (
               <div className="card-elevated rounded-xl p-16 text-center">
                 <svg className="w-20 h-20 text-gray-300 mx-auto mb-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -359,11 +514,13 @@ export default function SubjectPage() {
                     {sortedCourses.map((course, index) => (
                       <ClassCard
                         key={`${course.id}-${index}`}
+                        id={course.id}
                         code={course.code}
                         name={course.name}
                         department={course.department}
                         level={course.level}
                         avgGrade={course.avg_grade}
+                        unverifiedAverage={course.unverified_average}
                       />
                     ))}
                   </div>
@@ -386,11 +543,13 @@ export default function SubjectPage() {
                       {sortedCourses.map((course, index) => (
                         <CourseListItem
                           key={`${course.id}-${index}`}
+                          id={course.id}
                           code={course.code}
                           name={course.name}
                           department={course.department}
                           level={course.level}
                           avgGrade={course.avg_grade}
+                          unverifiedAverage={course.unverified_average}
                         />
                       ))}
                     </div>
@@ -398,7 +557,7 @@ export default function SubjectPage() {
                 )}
               </>
             )}
-          </>
+          </div>
         )}
 
         {/* Show message when no subject is selected */}
@@ -408,7 +567,7 @@ export default function SubjectPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
             <h3 className="text-xl font-bold text-gray-800 mb-2">Select a Subject</h3>
-            <p className="text-gray-500">Choose a subject from the dropdown above to view its courses.</p>
+            <p className="text-gray-500">Click on a subject above to view its courses.</p>
           </div>
         )}
       </main>
@@ -419,11 +578,16 @@ export default function SubjectPage() {
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2z'/%3E%3C/g%3E%3C/svg%3E")`,
         }}></div>
         <div className="container mx-auto px-4 text-center relative z-10">
-          <p className="text-purple-200/90 font-medium">Western University Class Averages Tracker</p>
-          <p className="text-xs text-purple-300/70 mt-3 font-light">© {new Date().getFullYear()} Western University</p>
+          <a 
+            href="https://www.linkedin.com/in/annas-amar/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-purple-200/90 hover:text-purple-100 underline transition-colors font-medium"
+          >
+            LinkedIn
+          </a>
         </div>
       </footer>
     </div>
   );
 }
-

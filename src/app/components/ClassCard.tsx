@@ -1,14 +1,18 @@
 'use client';
 
+import Link from 'next/link';
+
 interface ClassCardProps {
+  id: number;
   code: string;
   name: string;
   department: string;
   level: number;
   avgGrade: number | null;
+  unverifiedAverage: number | null;
 }
 
-export default function ClassCard({ code, name, department, level, avgGrade }: ClassCardProps) {
+export default function ClassCard({ id, code, name, department, level, avgGrade, unverifiedAverage }: ClassCardProps) {
   const getLevelColor = (level: number) => {
     if (level >= 4) return { text: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-200' };
     if (level >= 3) return { text: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200' };
@@ -42,10 +46,10 @@ export default function ClassCard({ code, name, department, level, avgGrade }: C
   };
 
   const levelColors = getLevelColor(level);
-  const gradeColors = getGradeColor(avgGrade);
+  const gradeColors = getGradeColor(avgGrade ?? unverifiedAverage);
 
   return (
-    <div className="card-elevated rounded-xl p-5 border-l-[3px] border-purple-600 bg-white relative overflow-hidden group">
+    <Link href={`/course/${id}`} className="block card-elevated rounded-xl p-5 border-l-[3px] border-purple-600 bg-white relative overflow-hidden group hover:shadow-lg transition-all cursor-pointer">
       {/* Subtle gradient accent */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
       
@@ -59,18 +63,47 @@ export default function ClassCard({ code, name, department, level, avgGrade }: C
           {/* Grade Display */}
           <div className="flex items-end justify-between gap-4">
             <div className="flex-1">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5 font-medium">Average</p>
-              <div className={`inline-flex items-baseline gap-1 px-3 py-1.5 rounded-lg ${gradeColors.bg}`}>
-                <p className={`text-2xl font-black ${gradeColors.text} leading-none`}>
-                  {avgGrade !== null ? avgGrade.toFixed(1) : '—'}
-                </p>
-                {avgGrade !== null && <span className={`text-xs font-semibold ${gradeColors.text} opacity-70`}>%</span>}
-              </div>
+              {avgGrade !== null ? (
+                <>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5 font-medium">Verified Average</p>
+                  <div className={`inline-flex items-baseline gap-1 px-3 py-1.5 rounded-lg ${gradeColors.bg}`}>
+                    <p className={`text-2xl font-black ${gradeColors.text} leading-none`}>
+                      {avgGrade.toFixed(1)}
+                    </p>
+                    <span className={`text-xs font-semibold ${gradeColors.text} opacity-70`}>%</span>
+                  </div>
+                  {unverifiedAverage !== null && unverifiedAverage !== undefined && (
+                    <div className="mt-2">
+                      <p className="text-[9px] text-gray-400 uppercase tracking-widest mb-1 font-medium">Unverified</p>
+                      <p className="text-sm font-semibold text-gray-600">
+                        {unverifiedAverage.toFixed(1)}%
+                      </p>
+                    </div>
+                  )}
+                </>
+              ) : unverifiedAverage !== null && unverifiedAverage !== undefined ? (
+                <>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5 font-medium">Unverified Average</p>
+                  <div className={`inline-flex items-baseline gap-1 px-3 py-1.5 rounded-lg ${gradeColors.bg}`}>
+                    <p className={`text-2xl font-black ${gradeColors.text} leading-none`}>
+                      {unverifiedAverage.toFixed(1)}
+                    </p>
+                    <span className={`text-xs font-semibold ${gradeColors.text} opacity-70`}>%</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5 font-medium">Average</p>
+                  <div className={`inline-flex items-baseline gap-1 px-3 py-1.5 rounded-lg ${gradeColors.bg}`}>
+                    <p className={`text-2xl font-black ${gradeColors.text} leading-none`}>—</p>
+                  </div>
+                </>
+              )}
             </div>
             <div className="text-right">
               <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5 font-medium">Letter</p>
               <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg ${gradeColors.bg} ${gradeColors.text} font-black text-xl`}>
-                {getGradeLetter(avgGrade)}
+                {getGradeLetter(avgGrade ?? unverifiedAverage)}
               </div>
             </div>
           </div>
@@ -90,7 +123,7 @@ export default function ClassCard({ code, name, department, level, avgGrade }: C
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

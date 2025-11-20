@@ -1,14 +1,18 @@
 'use client';
 
+import Link from 'next/link';
+
 interface CourseListItemProps {
+  id: number;
   code: string;
   name: string;
   department: string;
   level: number;
   avgGrade: number | null;
+  unverifiedAverage: number | null;
 }
 
-export default function CourseListItem({ code, name, department, level, avgGrade }: CourseListItemProps) {
+export default function CourseListItem({ id, code, name, department, level, avgGrade, unverifiedAverage }: CourseListItemProps) {
   const getLevelColor = (level: number) => {
     if (level >= 4) return { text: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-200' };
     if (level >= 3) return { text: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200' };
@@ -42,10 +46,10 @@ export default function CourseListItem({ code, name, department, level, avgGrade
   };
 
   const levelColors = getLevelColor(level);
-  const gradeColors = getGradeColor(avgGrade);
+  const gradeColors = getGradeColor(avgGrade ?? unverifiedAverage);
 
   return (
-    <div className="group bg-white border-b border-gray-100 hover:bg-gray-50/50 transition-colors px-6 py-4">
+    <Link href={`/course/${id}`} className="block group bg-white border-b border-gray-100 hover:bg-gray-50/50 transition-colors px-6 py-4 cursor-pointer">
       <div className="flex items-center justify-between gap-6">
         {/* Course Info */}
         <div className="flex-1 min-w-0">
@@ -65,23 +69,52 @@ export default function CourseListItem({ code, name, department, level, avgGrade
         {/* Grade Info */}
         <div className="flex items-center gap-6 flex-shrink-0">
           <div className="text-right">
-            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-medium">Average</p>
-            <div className={`inline-flex items-baseline gap-1 px-3 py-1 rounded-lg ${gradeColors.bg}`}>
-              <p className={`text-lg font-black ${gradeColors.text} leading-none`}>
-                {avgGrade !== null ? avgGrade.toFixed(1) : '—'}
-              </p>
-              {avgGrade !== null && <span className={`text-xs font-semibold ${gradeColors.text} opacity-70`}>%</span>}
-            </div>
+            {avgGrade !== null ? (
+              <>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-medium">Verified</p>
+                <div className={`inline-flex items-baseline gap-1 px-3 py-1 rounded-lg ${gradeColors.bg}`}>
+                  <p className={`text-lg font-black ${gradeColors.text} leading-none`}>
+                    {avgGrade.toFixed(1)}
+                  </p>
+                  <span className={`text-xs font-semibold ${gradeColors.text} opacity-70`}>%</span>
+                </div>
+                {unverifiedAverage !== null && (
+                  <div className="mt-1">
+                    <p className="text-[9px] text-gray-400 uppercase tracking-widest mb-0.5 font-medium">Unverified</p>
+                    <p className="text-sm font-semibold text-gray-600">
+                      {unverifiedAverage.toFixed(1)}%
+                    </p>
+                  </div>
+                )}
+              </>
+            ) : unverifiedAverage !== null ? (
+              <>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-medium">Unverified</p>
+                <div className={`inline-flex items-baseline gap-1 px-3 py-1 rounded-lg ${gradeColors.bg}`}>
+                  <p className={`text-lg font-black ${gradeColors.text} leading-none`}>
+                    {unverifiedAverage.toFixed(1)}
+                  </p>
+                  <span className={`text-xs font-semibold ${gradeColors.text} opacity-70`}>%</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-medium">Average</p>
+                <div className={`inline-flex items-baseline gap-1 px-3 py-1 rounded-lg ${gradeColors.bg}`}>
+                  <p className={`text-lg font-black ${gradeColors.text} leading-none`}>—</p>
+                </div>
+              </>
+            )}
           </div>
           <div className="text-right">
             <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-medium">Letter</p>
             <div className={`inline-flex items-center justify-center w-10 h-10 rounded-lg ${gradeColors.bg} ${gradeColors.text} font-black text-base`}>
-              {getGradeLetter(avgGrade)}
+              {getGradeLetter(avgGrade ?? unverifiedAverage)}
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

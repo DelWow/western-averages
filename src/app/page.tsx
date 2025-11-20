@@ -14,10 +14,11 @@ interface Course {
   department: string;
   level: number;
   avg_grade: number | null;
+  unverified_average: number | null;
   created_at: string;
 }
 
-type SortOption = 'letter-grade' | 'avg-low-high' | 'avg-high-low' | 'alphabetical' | 'level';
+type SortOption = 'letter-grade' | 'avg-low-high' | 'avg-high-low' | 'unverified-low-high' | 'unverified-high-low' | 'alphabetical' | 'level';
 
 export default function Home() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -68,7 +69,69 @@ export default function Home() {
           new Map(allCourses.map(course => [course.id, course])).values()
         );
 
-        setCourses(uniqueCourses);
+        // Fetch unverified averages for all courses
+        const courseIdsSet = new Set(uniqueCourses.map(c => c.id));
+        const unverifiedAveragesMap = new Map<number, number>();
+        
+        // Fetch all student averages in batches (without filtering by course_id to avoid limits)
+        let allSubmissions: { course_id: number; grade: number }[] = [];
+        let submissionsFrom = 0;
+        const submissionsPageSize = 1000;
+        
+        while (true) {
+          const { data: submissionsData, error: submissionsError } = await supabase
+            .from('student_averages')
+            .select('course_id, grade')
+            .range(submissionsFrom, submissionsFrom + submissionsPageSize - 1);
+
+          if (submissionsError) {
+            console.error('Error fetching student averages:', submissionsError);
+            break;
+          }
+
+          if (submissionsData && submissionsData.length > 0) {
+            // Filter to only include courses we care about
+            const filteredSubmissions = submissionsData.filter(s => courseIdsSet.has(s.course_id));
+            allSubmissions = [...allSubmissions, ...filteredSubmissions];
+            submissionsFrom += submissionsPageSize;
+            
+            if (submissionsData.length < submissionsPageSize) {
+              break;
+            }
+          } else {
+            break;
+          }
+        }
+
+        // Calculate unverified averages per course
+        const courseGradesMap = new Map<number, number[]>();
+        allSubmissions.forEach(submission => {
+          const courseId = submission.course_id;
+          const grade = typeof submission.grade === 'string' ? parseFloat(submission.grade) : submission.grade;
+          if (!isNaN(grade) && isFinite(grade)) {
+            if (!courseGradesMap.has(courseId)) {
+              courseGradesMap.set(courseId, []);
+            }
+            courseGradesMap.get(courseId)!.push(grade);
+          }
+        });
+
+        // Calculate averages
+        courseGradesMap.forEach((grades, courseId) => {
+          if (grades.length > 0) {
+            const sum = grades.reduce((a, b) => a + b, 0);
+            const average = sum / grades.length;
+            unverifiedAveragesMap.set(courseId, parseFloat(average.toFixed(2)));
+          }
+        });
+
+        // Add unverified averages to courses
+        const coursesWithUnverified = uniqueCourses.map(course => ({
+          ...course,
+          unverified_average: unverifiedAveragesMap.has(course.id) ? unverifiedAveragesMap.get(course.id)! : null
+        }));
+
+        setCourses(coursesWithUnverified);
       } catch (error) {
         console.error('Error fetching courses:', error);
       } finally {
@@ -119,20 +182,19 @@ export default function Home() {
 
   // Sort courses based on selected option
   const sortedCourses = [...courses].sort((a, b) => {
-    // Always put N/A (null) averages after courses with averages
-    const aIsNull = a.avg_grade === null;
-    const bIsNull = b.avg_grade === null;
-    
-    if (aIsNull && !bIsNull) return 1; // a goes after b
-    if (!aIsNull && bIsNull) return -1; // b goes after a
-    if (aIsNull && bIsNull) {
-      // Both are null, sort alphabetically
-      return a.name.localeCompare(b.name);
-    }
-    
-    // Both have averages, proceed with normal sorting
     switch (sortOption) {
       case 'letter-grade': {
+        // Always put N/A (null) averages after courses with averages
+        const aIsNull = a.avg_grade === null;
+        const bIsNull = b.avg_grade === null;
+        
+        if (aIsNull && !bIsNull) return 1; // a goes after b
+        if (!aIsNull && bIsNull) return -1; // b goes after a
+        if (aIsNull && bIsNull) {
+          // Both are null, sort alphabetically
+          return a.name.localeCompare(b.name);
+        }
+        
         const gradeA = getGradeLetter(a.avg_grade);
         const gradeB = getGradeLetter(b.avg_grade);
         // Sort by letter grade (A+ > A > A- > B+ > ... > F)
@@ -146,10 +208,64 @@ export default function Home() {
         return (gradeOrder[gradeA] || 12) - (gradeOrder[gradeB] || 12);
       }
       case 'avg-low-high': {
+        // Always put N/A (null) averages after courses with averages
+        const aIsNull = a.avg_grade === null;
+        const bIsNull = b.avg_grade === null;
+        
+        if (aIsNull && !bIsNull) return 1;
+        if (!aIsNull && bIsNull) return -1;
+        if (aIsNull && bIsNull) {
+          return a.name.localeCompare(b.name);
+        }
+        
         return (a.avg_grade ?? 0) - (b.avg_grade ?? 0);
       }
       case 'avg-high-low': {
+        // Always put N/A (null) averages after courses with averages
+        const aIsNull = a.avg_grade === null;
+        const bIsNull = b.avg_grade === null;
+        
+        if (aIsNull && !bIsNull) return 1;
+        if (!aIsNull && bIsNull) return -1;
+        if (aIsNull && bIsNull) {
+          return a.name.localeCompare(b.name);
+        }
+        
         return (b.avg_grade ?? 0) - (a.avg_grade ?? 0);
+      }
+      case 'unverified-low-high': {
+        // Always put N/A (null) unverified averages after courses with unverified averages
+        const aIsNull = a.unverified_average === null;
+        const bIsNull = b.unverified_average === null;
+        
+        if (aIsNull && !bIsNull) return 1;
+        if (!aIsNull && bIsNull) return -1;
+        if (aIsNull && bIsNull) {
+          // If both are null, sort by verified average or alphabetically
+          if (a.avg_grade !== null && b.avg_grade !== null) {
+            return a.avg_grade - b.avg_grade;
+          }
+          return a.name.localeCompare(b.name);
+        }
+        
+        return (a.unverified_average ?? 0) - (b.unverified_average ?? 0);
+      }
+      case 'unverified-high-low': {
+        // Always put N/A (null) unverified averages after courses with unverified averages
+        const aIsNull = a.unverified_average === null;
+        const bIsNull = b.unverified_average === null;
+        
+        if (aIsNull && !bIsNull) return 1;
+        if (!aIsNull && bIsNull) return -1;
+        if (aIsNull && bIsNull) {
+          // If both are null, sort by verified average or alphabetically
+          if (a.avg_grade !== null && b.avg_grade !== null) {
+            return b.avg_grade - a.avg_grade;
+          }
+          return a.name.localeCompare(b.name);
+        }
+        
+        return (b.unverified_average ?? 0) - (a.unverified_average ?? 0);
       }
       case 'alphabetical': {
         return a.name.localeCompare(b.name);
@@ -164,8 +280,10 @@ export default function Home() {
 
   const sortOptions: { value: SortOption; label: string }[] = [
     { value: 'letter-grade', label: 'Letter Grade' },
-    { value: 'avg-low-high', label: 'Average: Lowest to Highest' },
-    { value: 'avg-high-low', label: 'Average: Highest to Lowest' },
+    { value: 'avg-low-high', label: 'Verified Average: Lowest to Highest' },
+    { value: 'avg-high-low', label: 'Verified Average: Highest to Lowest' },
+    { value: 'unverified-low-high', label: 'Unverified Average: Lowest to Highest' },
+    { value: 'unverified-high-low', label: 'Unverified Average: Highest to Lowest' },
     { value: 'level', label: 'Level: Low to High' },
     { value: 'alphabetical', label: 'Alphabetical' },
   ];
@@ -344,11 +462,13 @@ export default function Home() {
                 {paginatedCourses.map((course, index) => (
                   <ClassCard
                     key={`${course.id}-${index}`}
+                    id={course.id}
                     code={course.code}
                     name={course.name}
                     department={course.department}
                     level={course.level}
                     avgGrade={course.avg_grade}
+                    unverifiedAverage={course.unverified_average}
                   />
                 ))}
               </div>
@@ -371,11 +491,13 @@ export default function Home() {
                   {paginatedCourses.map((course, index) => (
                     <CourseListItem
                       key={`${course.id}-${index}`}
+                      id={course.id}
                       code={course.code}
                       name={course.name}
                       department={course.department}
                       level={course.level}
                       avgGrade={course.avg_grade}
+                      unverifiedAverage={course.unverified_average}
                     />
                   ))}
                 </div>
@@ -472,8 +594,14 @@ export default function Home() {
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2z'/%3E%3C/g%3E%3C/svg%3E")`,
         }}></div>
         <div className="container mx-auto px-4 text-center relative z-10">
-          <p className="text-purple-200/90 font-medium">Western University Class Averages Tracker</p>
-          <p className="text-xs text-purple-300/70 mt-3 font-light">© {new Date().getFullYear()} Western University</p>
+          <a 
+            href="https://www.linkedin.com/in/annas-amar/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-purple-200/90 hover:text-purple-100 underline transition-colors font-medium"
+          >
+            LinkedIn
+          </a>
         </div>
       </footer>
     </div>
