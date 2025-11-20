@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '../components/Header';
 import ClassCard from '../components/ClassCard';
 import CourseListItem from '../components/CourseListItem';
 import { createClient } from '@/lib/supabase';
-
-export const dynamic = 'force-dynamic';
 
 interface Course {
   id: number;
@@ -27,7 +25,7 @@ interface SubjectWithCount {
 
 type SortOption = 'letter-grade' | 'avg-low-high' | 'avg-high-low' | 'unverified-low-high' | 'unverified-high-low' | 'alphabetical';
 
-export default function SubjectPage() {
+function SubjectPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedSubjectParam = searchParams.get('subject');
@@ -592,5 +590,23 @@ export default function SubjectPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function SubjectPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#faf9f7] relative">
+        <Header />
+        <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-10 relative z-10">
+          <div className="card-elevated rounded-xl p-16 text-center">
+            <div className="animate-spin rounded-full h-14 w-14 border-[3px] border-purple-200 border-t-purple-600 mx-auto mb-5"></div>
+            <p className="text-gray-600 font-medium">Loading...</p>
+          </div>
+        </main>
+      </div>
+    }>
+      <SubjectPageContent />
+    </Suspense>
   );
 }
