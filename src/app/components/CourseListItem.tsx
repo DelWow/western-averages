@@ -49,17 +49,17 @@ export default function CourseListItem({ id, code, name, department, level, avgG
   const gradeColors = getGradeColor(avgGrade ?? unverifiedAverage);
 
   return (
-    <Link href={`/course/${id}`} className="block group bg-white border-b border-gray-100 hover:bg-gray-50/50 transition-colors px-6 py-4 cursor-pointer">
-      <div className="flex items-center justify-between gap-6">
+    <Link href={`/course/${id}`} className="block group bg-white border-b border-gray-100 hover:bg-gray-50/50 transition-colors px-4 sm:px-6 py-3 sm:py-4 cursor-pointer">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-6">
         {/* Course Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-4 mb-1.5">
-            <h3 className="text-base font-bold text-gray-900 truncate">{name}</h3>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 mb-1.5">
+            <h3 className="text-sm sm:text-base font-bold text-gray-900 truncate">{name}</h3>
             <span className="text-xs text-gray-500 font-mono tracking-wider flex-shrink-0">{code}</span>
           </div>
-          <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm flex-wrap">
             <span className="text-gray-600 font-medium">{department}</span>
-            <span className="text-gray-400">•</span>
+            <span className="text-gray-400 hidden sm:inline">•</span>
             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${levelColors.text} ${levelColors.bg} border ${levelColors.border}`}>
               {level}000
             </span>
@@ -67,13 +67,13 @@ export default function CourseListItem({ id, code, name, department, level, avgG
         </div>
 
         {/* Grade Info */}
-        <div className="flex items-center gap-6 flex-shrink-0">
-          <div className="text-right">
+        <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0">
+          <div className="text-center w-20">
             {avgGrade !== null ? (
               <>
                 <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-medium">Verified</p>
-                <div className={`inline-flex items-baseline gap-1 px-3 py-1 rounded-lg ${gradeColors.bg}`}>
-                  <p className={`text-lg font-black ${gradeColors.text} leading-none`}>
+                <div className={`inline-flex items-baseline gap-1 px-2 sm:px-3 py-1 rounded-lg ${gradeColors.bg}`}>
+                  <p className={`text-base sm:text-lg font-black ${gradeColors.text} leading-none`}>
                     {avgGrade.toFixed(1)}
                   </p>
                   <span className={`text-xs font-semibold ${gradeColors.text} opacity-70`}>%</span>
@@ -81,7 +81,7 @@ export default function CourseListItem({ id, code, name, department, level, avgG
                 {unverifiedAverage !== null && (
                   <div className="mt-1">
                     <p className="text-[9px] text-gray-400 uppercase tracking-widest mb-0.5 font-medium">Unverified</p>
-                    <p className="text-sm font-semibold text-gray-600">
+                    <p className="text-xs sm:text-sm font-semibold text-gray-600">
                       {unverifiedAverage.toFixed(1)}%
                     </p>
                   </div>
@@ -90,8 +90,8 @@ export default function CourseListItem({ id, code, name, department, level, avgG
             ) : unverifiedAverage !== null ? (
               <>
                 <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-medium">Unverified</p>
-                <div className={`inline-flex items-baseline gap-1 px-3 py-1 rounded-lg ${gradeColors.bg}`}>
-                  <p className={`text-lg font-black ${gradeColors.text} leading-none`}>
+                <div className={`inline-flex items-baseline gap-1 px-2 sm:px-3 py-1 rounded-lg ${gradeColors.bg}`}>
+                  <p className={`text-base sm:text-lg font-black ${gradeColors.text} leading-none`}>
                     {unverifiedAverage.toFixed(1)}
                   </p>
                   <span className={`text-xs font-semibold ${gradeColors.text} opacity-70`}>%</span>
@@ -100,15 +100,15 @@ export default function CourseListItem({ id, code, name, department, level, avgG
             ) : (
               <>
                 <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-medium">Average</p>
-                <div className={`inline-flex items-baseline gap-1 px-3 py-1 rounded-lg ${gradeColors.bg}`}>
-                  <p className={`text-lg font-black ${gradeColors.text} leading-none`}>—</p>
+                <div className={`inline-flex items-baseline gap-1 px-2 sm:px-3 py-1 rounded-lg ${gradeColors.bg}`}>
+                  <p className={`text-base sm:text-lg font-black ${gradeColors.text} leading-none`}>—</p>
                 </div>
               </>
             )}
           </div>
-          <div className="text-right">
+          <div className="text-center w-16">
             <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-medium">Letter</p>
-            <div className={`inline-flex items-center justify-center w-10 h-10 rounded-lg ${gradeColors.bg} ${gradeColors.text} font-black text-base`}>
+            <div className={`inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg ${gradeColors.bg} ${gradeColors.text} font-black text-sm sm:text-base`}>
               {getGradeLetter(avgGrade ?? unverifiedAverage)}
             </div>
           </div>

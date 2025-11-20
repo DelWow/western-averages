@@ -179,42 +179,42 @@ export default function UnverifiedAveragesSection({
   const hasSubmissions = stats && stats.unverified_count > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Statistics Section */}
       {hasSubmissions && (
-        <div className="card-elevated rounded-xl p-6 bg-white border-l-[3px] border-purple-600">
-          <h3 className="text-xl font-bold text-gray-900 mb-6 heading-section">Student-Submitted Averages</h3>
+        <div className="card-elevated rounded-xl p-4 sm:p-6 bg-white border-l-[3px] border-purple-600">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 heading-section">Student-Submitted Averages</h3>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1 font-medium">Total Submissions</p>
-              <p className="text-2xl font-black text-gray-900">{stats.unverified_count}</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+              <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider mb-1 font-medium">Total Submissions</p>
+              <p className="text-xl sm:text-2xl font-black text-gray-900">{stats.unverified_count}</p>
             </div>
             
             {stats.unverified_average !== null && (
               <>
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-1 font-medium">Average</p>
-                  <p className="text-2xl font-black text-blue-700">{stats.unverified_average.toFixed(1)}%</p>
+                <div className="bg-blue-50 rounded-lg p-3 sm:p-4">
+                  <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider mb-1 font-medium">Average</p>
+                  <p className="text-xl sm:text-2xl font-black text-blue-700">{stats.unverified_average.toFixed(1)}%</p>
                 </div>
                 
-                <div className="bg-emerald-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-1 font-medium">Median</p>
-                  <p className="text-2xl font-black text-emerald-700">
+                <div className="bg-emerald-50 rounded-lg p-3 sm:p-4">
+                  <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider mb-1 font-medium">Median</p>
+                  <p className="text-xl sm:text-2xl font-black text-emerald-700">
                     {stats.unverified_median !== null ? stats.unverified_median.toFixed(1) : '—'}%
                   </p>
                 </div>
                 
                 {stats.unverified_min !== null && stats.unverified_max !== null && (
                   <>
-                    <div className="bg-amber-50 rounded-lg p-4">
-                      <p className="text-xs text-gray-500 uppercase tracking-wider mb-1 font-medium">Lowest</p>
-                      <p className="text-2xl font-black text-amber-700">{stats.unverified_min.toFixed(1)}%</p>
+                    <div className="bg-amber-50 rounded-lg p-3 sm:p-4">
+                      <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider mb-1 font-medium">Lowest</p>
+                      <p className="text-xl sm:text-2xl font-black text-amber-700">{stats.unverified_min.toFixed(1)}%</p>
                     </div>
                     
-                    <div className="bg-purple-50 rounded-lg p-4">
-                      <p className="text-xs text-gray-500 uppercase tracking-wider mb-1 font-medium">Highest</p>
-                      <p className="text-2xl font-black text-purple-700">{stats.unverified_max.toFixed(1)}%</p>
+                    <div className="bg-purple-50 rounded-lg p-3 sm:p-4">
+                      <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider mb-1 font-medium">Highest</p>
+                      <p className="text-xl sm:text-2xl font-black text-purple-700">{stats.unverified_max.toFixed(1)}%</p>
                     </div>
                   </>
                 )}
@@ -224,17 +224,17 @@ export default function UnverifiedAveragesSection({
 
           {/* Comparison with Verified Average */}
           {verifiedAverage !== null && stats.unverified_average !== null && (
-            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 border border-purple-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-gray-600 uppercase tracking-wider mb-1 font-medium">Verified vs Unverified</p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-lg font-semibold text-gray-700">Verified:</span>
-                    <span className="text-xl font-black text-purple-700">{verifiedAverage.toFixed(1)}%</span>
-                    <span className="text-gray-400">•</span>
-                    <span className="text-lg font-semibold text-gray-700">Unverified:</span>
-                    <span className="text-xl font-black text-blue-700">{stats.unverified_average.toFixed(1)}%</span>
-                    <span className="text-sm text-gray-500">
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-3 sm:p-4 border border-purple-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] sm:text-xs text-gray-600 uppercase tracking-wider mb-1 font-medium">Verified vs Unverified</p>
+                  <div className="flex flex-wrap items-baseline gap-1.5 sm:gap-2">
+                    <span className="text-sm sm:text-lg font-semibold text-gray-700">Verified:</span>
+                    <span className="text-base sm:text-xl font-black text-purple-700">{verifiedAverage.toFixed(1)}%</span>
+                    <span className="text-gray-400 hidden sm:inline">•</span>
+                    <span className="text-sm sm:text-lg font-semibold text-gray-700">Unverified:</span>
+                    <span className="text-base sm:text-xl font-black text-blue-700">{stats.unverified_average.toFixed(1)}%</span>
+                    <span className="text-xs sm:text-sm text-gray-500">
                       ({stats.unverified_average > verifiedAverage ? '+' : ''}
                       {(stats.unverified_average - verifiedAverage).toFixed(1)}%)
                     </span>
@@ -248,15 +248,15 @@ export default function UnverifiedAveragesSection({
 
       {/* Recent Submissions */}
       {hasSubmissions && (
-        <div className="card-elevated rounded-xl p-6 bg-white border-l-[3px] border-gray-300">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-900 heading-section">
+        <div className="card-elevated rounded-xl p-4 sm:p-6 bg-white border-l-[3px] border-gray-300">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 heading-section">
               Recent Submissions
             </h3>
             {recentSubmissions.length >= 10 && (
               <button
                 onClick={() => setShowAll(!showAll)}
-                className="text-sm text-purple-600 hover:text-purple-700 font-semibold transition-colors"
+                className="text-xs sm:text-sm text-purple-600 hover:text-purple-700 font-semibold transition-colors text-left sm:text-right"
               >
                 {showAll ? 'Show Less' : `Show All (${stats?.unverified_count || 0})`}
               </button>
@@ -270,30 +270,30 @@ export default function UnverifiedAveragesSection({
                 return (
                   <div
                     key={submission.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex items-center justify-between p-2.5 sm:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                   >
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className={`w-12 h-12 rounded-lg ${gradeColors.bg} flex items-center justify-center flex-shrink-0`}>
-                        <span className={`text-lg font-black ${gradeColors.text}`}>
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${gradeColors.bg} flex items-center justify-center flex-shrink-0`}>
+                        <span className={`text-base sm:text-lg font-black ${gradeColors.text}`}>
                           {submission.grade.toFixed(1)}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="text-sm font-semibold text-gray-900">{submission.grade.toFixed(1)}%</p>
+                        <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1 flex-wrap">
+                          <p className="text-xs sm:text-sm font-semibold text-gray-900">{submission.grade.toFixed(1)}%</p>
                           {submission.term && submission.year && (
                             <>
-                              <span className="text-gray-300">•</span>
-                              <span className="text-xs font-medium text-gray-600">
+                              <span className="text-gray-300 hidden sm:inline">•</span>
+                              <span className="text-[10px] sm:text-xs font-medium text-gray-600">
                                 {formatTermYear(submission.term, submission.year)}
                               </span>
                             </>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500">{formatDate(submission.created_at)}</p>
+                        <p className="text-[10px] sm:text-xs text-gray-500">{formatDate(submission.created_at)}</p>
                       </div>
                     </div>
-                    <span className="text-xs text-gray-400 uppercase tracking-wider font-medium flex-shrink-0 ml-2">Unverified</span>
+                    <span className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider font-medium flex-shrink-0 ml-1 sm:ml-2 hidden sm:inline">Unverified</span>
                   </div>
                 );
               })

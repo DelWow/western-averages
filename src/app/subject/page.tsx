@@ -311,32 +311,32 @@ export default function SubjectPage() {
   return (
     <div className="min-h-screen bg-[#faf9f7] relative">
       <Header />
-      <main className="container mx-auto px-4 py-10 relative z-10">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-10 relative z-10">
         {/* Disclaimer Banner */}
-        <div className="mb-6 card-elevated rounded-xl p-4 bg-amber-50 border-l-4 border-amber-400">
-          <div className="flex items-start gap-3">
-            <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="mb-4 sm:mb-6 card-elevated rounded-xl p-3 sm:p-4 bg-amber-50 border-l-4 border-amber-400">
+          <div className="flex items-start gap-2 sm:gap-3">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <div className="flex-1">
-              <p className="text-sm text-amber-900 font-medium leading-relaxed">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-amber-900 font-medium leading-relaxed">
                 <span className="font-semibold">Disclaimer:</span> Course averages displayed here are not guaranteed to be completely accurate and rely on the goodwill of students sharing their course averages. These figures should be used as a general reference only.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="mb-10">
-          <h1 className="text-5xl font-black text-gray-900 mb-3 heading-display">Browse by Subject</h1>
-          <p className="text-gray-600 text-lg font-light">Select a subject to explore its courses</p>
+        <div className="mb-6 sm:mb-10">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 mb-2 sm:mb-3 heading-display">Browse by Subject</h1>
+          <p className="text-gray-600 text-base sm:text-lg font-light">Select a subject to explore its courses</p>
         </div>
 
         {/* Subject Selection Section */}
         <div className="mb-10">
           {/* Search Bar */}
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             <div className="relative">
-              <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -344,14 +344,14 @@ export default function SubjectPage() {
                 placeholder="Search subjects..."
                 value={subjectSearch}
                 onChange={(e) => setSubjectSearch(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                className="w-full pl-10 sm:pl-12 pr-10 sm:pr-4 py-2.5 sm:py-3.5 rounded-xl border border-gray-200 bg-white text-sm sm:text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               />
               {subjectSearch && (
                 <button
                   onClick={() => setSubjectSearch('')}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -361,14 +361,14 @@ export default function SubjectPage() {
 
           {/* Selected Subject Badge */}
           {selectedSubject && (
-            <div className="mb-6 flex items-center gap-3 flex-wrap">
-              <span className="text-sm text-gray-600 font-medium">Selected:</span>
+            <div className="mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3 flex-wrap">
+              <span className="text-xs sm:text-sm text-gray-600 font-medium">Selected:</span>
               <button
                 onClick={() => setSelectedSubject('')}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-semibold hover:bg-purple-200 transition-colors"
+                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-100 text-purple-700 rounded-lg text-xs sm:text-sm font-semibold hover:bg-purple-200 transition-colors"
               >
-                {selectedSubject}
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span className="truncate max-w-[150px] sm:max-w-none">{selectedSubject}</span>
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -377,38 +377,38 @@ export default function SubjectPage() {
 
           {/* Subjects Grid */}
           {loading ? (
-            <div className="card-elevated rounded-xl p-16 text-center">
-              <div className="animate-spin rounded-full h-14 w-14 border-[3px] border-purple-200 border-t-purple-600 mx-auto mb-5"></div>
-              <p className="text-gray-600 font-medium">Loading subjects...</p>
+            <div className="card-elevated rounded-xl p-12 sm:p-16 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 sm:h-14 sm:w-14 border-[3px] border-purple-200 border-t-purple-600 mx-auto mb-4 sm:mb-5"></div>
+              <p className="text-sm sm:text-base text-gray-600 font-medium">Loading subjects...</p>
             </div>
           ) : filteredSubjects.length === 0 ? (
-            <div className="card-elevated rounded-xl p-16 text-center">
-              <svg className="w-20 h-20 text-gray-300 mx-auto mb-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="card-elevated rounded-xl p-12 sm:p-16 text-center">
+              <svg className="w-16 h-16 sm:w-20 sm:h-20 text-gray-300 mx-auto mb-4 sm:mb-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">No subjects found</h3>
-              <p className="text-gray-500">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">No subjects found</h3>
+              <p className="text-sm sm:text-base text-gray-500">
                 {subjectSearch ? `No subjects match "${subjectSearch}"` : 'No subjects available'}
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
               {filteredSubjects.map((subject) => {
                 const isSelected = selectedSubject === subject.name;
                 return (
                   <button
                     key={subject.name}
                     onClick={() => handleSubjectClick(subject.name)}
-                    className={`card-elevated rounded-xl p-4 text-left transition-all ${
+                    className={`card-elevated rounded-xl p-3 sm:p-4 text-left transition-all ${
                       isSelected
                         ? 'bg-purple-600 text-white border-2 border-purple-700 shadow-lg transform scale-105'
                         : 'bg-white text-gray-900 hover:bg-purple-50 hover:border-purple-200 border-2 border-transparent'
                     }`}
                   >
-                    <div className="font-bold text-base mb-1 truncate" title={subject.name}>
+                    <div className="font-bold text-sm sm:text-base mb-1 truncate" title={subject.name}>
                       {subject.name}
                     </div>
-                    <div className={`text-sm ${isSelected ? 'text-purple-100' : 'text-gray-500'}`}>
+                    <div className={`text-xs sm:text-sm ${isSelected ? 'text-purple-100' : 'text-gray-500'}`}>
                       {subject.count} {subject.count === 1 ? 'course' : 'courses'}
                     </div>
                   </button>
@@ -420,17 +420,17 @@ export default function SubjectPage() {
 
         {/* Courses Section */}
         {selectedSubject && (
-          <div id="courses-section" className="mb-10">
-            <div className="mb-8 flex items-start justify-between flex-wrap gap-6">
-              <div className="max-w-2xl">
-                <h2 className="text-3xl font-black text-gray-900 mb-2 heading-section">
+          <div id="courses-section" className="mb-6 sm:mb-10">
+            <div className="mb-6 sm:mb-8 flex items-start justify-between flex-wrap gap-4 sm:gap-6">
+              <div className="max-w-2xl w-full sm:w-auto">
+                <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-1 sm:mb-2 heading-section">
                   Courses in {selectedSubject}
                 </h2>
-                <p className="text-gray-600 font-light">
+                <p className="text-sm sm:text-base text-gray-600 font-light">
                   {filteredCourses.length.toLocaleString()} {filteredCourses.length === 1 ? 'course' : 'courses'} found
                 </p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 {/* View Toggle */}
                 <div className="flex items-center bg-white rounded-xl p-1 shadow-sm border border-gray-200">
                   <button
@@ -463,21 +463,22 @@ export default function SubjectPage() {
                   </button>
                 </div>
                 {/* Sort Button */}
-                <div className="relative sort-menu-container">
+                <div className="relative sort-menu-container flex-1 sm:flex-none">
                   <button
                     onClick={() => setShowSortMenu(!showSortMenu)}
-                    className="btn-primary text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all flex items-center gap-2.5 shadow-sm font-medium text-sm"
+                    className="btn-primary text-white px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl hover:shadow-lg transition-all flex items-center gap-1.5 sm:gap-2.5 shadow-sm font-medium text-xs sm:text-sm w-full sm:w-auto justify-center"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
                     </svg>
-                    <span className="hidden sm:inline">Sort:</span> {sortOptions.find(opt => opt.value === sortOption)?.label}
-                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span className="hidden sm:inline">Sort:</span>
+                    <span className="truncate max-w-[120px] sm:max-w-none">{sortOptions.find(opt => opt.value === sortOption)?.label}</span>
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-0.5 sm:ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
                   {showSortMenu && (
-                    <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-100 z-20 overflow-hidden">
+                    <div className="absolute right-0 sm:right-0 mt-2 w-[calc(100vw-2rem)] sm:w-72 max-w-[calc(100vw-2rem)] sm:max-w-none bg-white rounded-xl shadow-2xl border border-gray-100 z-20 overflow-hidden">
                       {sortOptions.map((option) => (
                         <button
                           key={option.value}
@@ -527,14 +528,14 @@ export default function SubjectPage() {
                 ) : (
                   <div className="card-elevated rounded-xl overflow-hidden">
                     {/* List Header */}
-                    <div className="bg-gray-50 border-b border-gray-200 px-6 py-3">
+                    <div className="bg-gray-50 border-b border-gray-200 px-4 sm:px-6 py-2.5 sm:py-3 hidden sm:block">
                       <div className="flex items-center justify-between gap-6">
                         <div className="flex-1">
                           <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Course</span>
                         </div>
                         <div className="flex items-center gap-6 flex-shrink-0">
-                          <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold w-20 text-right">Average</span>
-                          <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold w-16 text-right">Letter</span>
+                          <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold w-20 text-center">Average</span>
+                          <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold w-16 text-center">Letter</span>
                         </div>
                       </div>
                     </div>

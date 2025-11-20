@@ -49,33 +49,33 @@ export default function ClassCard({ id, code, name, department, level, avgGrade,
   const gradeColors = getGradeColor(avgGrade ?? unverifiedAverage);
 
   return (
-    <Link href={`/course/${id}`} className="block card-elevated rounded-xl p-5 border-l-[3px] border-purple-600 bg-white relative overflow-hidden group hover:shadow-lg transition-all cursor-pointer">
+    <Link href={`/course/${id}`} className="block card-elevated rounded-xl p-4 sm:p-5 border-l-[3px] border-purple-600 bg-white relative overflow-hidden group hover:shadow-lg transition-all cursor-pointer">
       {/* Subtle gradient accent */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+      <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
       
       <div className="relative z-10">
-        <div className="mb-4 pb-3 border-b border-gray-100">
-          <h3 className="text-lg font-bold text-gray-900 mb-1.5 leading-tight heading-section">{name}</h3>
-          <p className="text-xs text-gray-500 font-mono tracking-wider">{code}</p>
+        <div className="mb-3 sm:mb-4 pb-2.5 sm:pb-3 border-b border-gray-100">
+          <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1 sm:mb-1.5 leading-tight heading-section">{name}</h3>
+          <p className="text-[10px] sm:text-xs text-gray-500 font-mono tracking-wider">{code}</p>
         </div>
         
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {/* Grade Display */}
-          <div className="flex items-end justify-between gap-4">
-            <div className="flex-1">
+          <div className="flex items-end justify-between gap-3 sm:gap-4">
+            <div className="flex-1 min-w-0">
               {avgGrade !== null ? (
                 <>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5 font-medium">Verified Average</p>
-                  <div className={`inline-flex items-baseline gap-1 px-3 py-1.5 rounded-lg ${gradeColors.bg}`}>
-                    <p className={`text-2xl font-black ${gradeColors.text} leading-none`}>
+                  <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest mb-1 sm:mb-1.5 font-medium">Verified Average</p>
+                  <div className={`inline-flex items-baseline gap-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg ${gradeColors.bg}`}>
+                    <p className={`text-xl sm:text-2xl font-black ${gradeColors.text} leading-none`}>
                       {avgGrade.toFixed(1)}
                     </p>
-                    <span className={`text-xs font-semibold ${gradeColors.text} opacity-70`}>%</span>
+                    <span className={`text-[10px] sm:text-xs font-semibold ${gradeColors.text} opacity-70`}>%</span>
                   </div>
                   {unverifiedAverage !== null && unverifiedAverage !== undefined && (
-                    <div className="mt-2">
-                      <p className="text-[9px] text-gray-400 uppercase tracking-widest mb-1 font-medium">Unverified</p>
-                      <p className="text-sm font-semibold text-gray-600">
+                    <div className="mt-1.5 sm:mt-2">
+                      <p className="text-[8px] sm:text-[9px] text-gray-400 uppercase tracking-widest mb-0.5 sm:mb-1 font-medium">Unverified</p>
+                      <p className="text-xs sm:text-sm font-semibold text-gray-600">
                         {unverifiedAverage.toFixed(1)}%
                       </p>
                     </div>
@@ -83,40 +83,40 @@ export default function ClassCard({ id, code, name, department, level, avgGrade,
                 </>
               ) : unverifiedAverage !== null && unverifiedAverage !== undefined ? (
                 <>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5 font-medium">Unverified Average</p>
-                  <div className={`inline-flex items-baseline gap-1 px-3 py-1.5 rounded-lg ${gradeColors.bg}`}>
-                    <p className={`text-2xl font-black ${gradeColors.text} leading-none`}>
+                  <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest mb-1 sm:mb-1.5 font-medium">Unverified Average</p>
+                  <div className={`inline-flex items-baseline gap-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg ${gradeColors.bg}`}>
+                    <p className={`text-xl sm:text-2xl font-black ${gradeColors.text} leading-none`}>
                       {unverifiedAverage.toFixed(1)}
                     </p>
-                    <span className={`text-xs font-semibold ${gradeColors.text} opacity-70`}>%</span>
+                    <span className={`text-[10px] sm:text-xs font-semibold ${gradeColors.text} opacity-70`}>%</span>
                   </div>
                 </>
               ) : (
                 <>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5 font-medium">Average</p>
-                  <div className={`inline-flex items-baseline gap-1 px-3 py-1.5 rounded-lg ${gradeColors.bg}`}>
-                    <p className={`text-2xl font-black ${gradeColors.text} leading-none`}>—</p>
+                  <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest mb-1 sm:mb-1.5 font-medium">Average</p>
+                  <div className={`inline-flex items-baseline gap-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg ${gradeColors.bg}`}>
+                    <p className={`text-xl sm:text-2xl font-black ${gradeColors.text} leading-none`}>—</p>
                   </div>
                 </>
               )}
             </div>
-            <div className="text-right">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5 font-medium">Letter</p>
-              <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg ${gradeColors.bg} ${gradeColors.text} font-black text-xl`}>
+            <div className="text-right flex-shrink-0">
+              <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest mb-1 sm:mb-1.5 font-medium">Letter</p>
+              <div className={`inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${gradeColors.bg} ${gradeColors.text} font-black text-lg sm:text-xl`}>
                 {getGradeLetter(avgGrade ?? unverifiedAverage)}
               </div>
             </div>
           </div>
 
           {/* Subject & Level */}
-          <div className="flex items-center justify-between gap-3 pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between gap-2 sm:gap-3 pt-2.5 sm:pt-3 border-t border-gray-100">
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-medium">Subject</p>
-              <p className="text-sm font-semibold text-gray-800 truncate">{department}</p>
+              <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest mb-0.5 sm:mb-1 font-medium">Subject</p>
+              <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">{department}</p>
             </div>
             <div className="text-right flex-shrink-0">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-medium">Level</p>
-              <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold ${levelColors.text} ${levelColors.bg} border ${levelColors.border}`}>
+              <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest mb-0.5 sm:mb-1 font-medium">Level</p>
+              <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-bold ${levelColors.text} ${levelColors.bg} border ${levelColors.border}`}>
                 {level}000
               </span>
             </div>

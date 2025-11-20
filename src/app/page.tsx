@@ -315,41 +315,41 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#faf9f7] relative">
       <Header />
-      <main className="container mx-auto px-4 py-10 relative z-10">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-10 relative z-10">
         {/* Disclaimer Banner */}
-        <div className="mb-6 card-elevated rounded-xl p-4 bg-amber-50 border-l-4 border-amber-400">
-          <div className="flex items-start gap-3">
-            <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="mb-4 sm:mb-6 card-elevated rounded-xl p-3 sm:p-4 bg-amber-50 border-l-4 border-amber-400">
+          <div className="flex items-start gap-2 sm:gap-3">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <div className="flex-1">
-              <p className="text-sm text-amber-900 font-medium leading-relaxed mb-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-amber-900 font-medium leading-relaxed mb-2">
                 <span className="font-semibold">Disclaimer:</span> Course averages displayed here are not guaranteed to be completely accurate and rely on the goodwill of students sharing their course averages. These figures should be used as a general reference only.
               </p>
-              <p className="text-sm text-amber-900 font-medium leading-relaxed mb-2">
+              <p className="text-xs sm:text-sm text-amber-900 font-medium leading-relaxed mb-2">
                 <span className="font-semibold">Note:</span> This list is very incomplete. Help us grow the database by submitting course averages from your transcripts!
               </p>
               <a
                 href="https://docs.google.com/forms/d/e/1FAIpQLSc899eAANEN86_cyUbraw4Afl87euBG98rMiLrNBXyrGiwuCw/viewform?usp=sharing&ouid=112869558789053127474"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-amber-800 hover:text-amber-900 underline transition-colors mt-1"
+                className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-amber-800 hover:text-amber-900 underline transition-colors mt-1 break-words"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                 </svg>
-                Submit course averages from transcripts
+                <span className="break-words">Submit course averages from transcripts</span>
               </a>
             </div>
           </div>
         </div>
 
-        <div className="mb-10 flex items-start justify-between flex-wrap gap-6">
-          <div className="max-w-2xl">
-            <h1 className="text-5xl font-black text-gray-900 mb-3 heading-display">Course Averages</h1>
-            <p className="text-gray-600 text-lg font-light leading-relaxed">Explore grade distributions across Western's course catalog</p>
+        <div className="mb-6 sm:mb-10 flex items-start justify-between flex-wrap gap-4 sm:gap-6">
+          <div className="max-w-2xl w-full sm:w-auto">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 mb-2 sm:mb-3 heading-display">Course Averages</h1>
+            <p className="text-gray-600 text-base sm:text-lg font-light leading-relaxed">Explore grade distributions across Western's course catalog</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             {/* View Toggle */}
             <div className="flex items-center bg-white rounded-xl p-1 shadow-sm border border-gray-200">
               <button
@@ -382,21 +382,22 @@ export default function Home() {
               </button>
             </div>
             {/* Sort Button */}
-            <div className="relative sort-menu-container">
+            <div className="relative sort-menu-container flex-1 sm:flex-none">
               <button
                 onClick={() => setShowSortMenu(!showSortMenu)}
-                className="btn-primary text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all flex items-center gap-2.5 shadow-sm font-medium text-sm"
+                className="btn-primary text-white px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl hover:shadow-lg transition-all flex items-center gap-1.5 sm:gap-2.5 shadow-sm font-medium text-xs sm:text-sm w-full sm:w-auto justify-center"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
                 </svg>
-                <span className="hidden sm:inline">Sort:</span> {sortOptions.find(opt => opt.value === sortOption)?.label}
-                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span className="hidden sm:inline">Sort:</span>
+                <span className="truncate max-w-[120px] sm:max-w-none">{sortOptions.find(opt => opt.value === sortOption)?.label}</span>
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-0.5 sm:ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               {showSortMenu && (
-                <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-100 z-20 overflow-hidden">
+                <div className="absolute right-0 sm:right-0 mt-2 w-[calc(100vw-2rem)] sm:w-72 max-w-[calc(100vw-2rem)] sm:max-w-none bg-white rounded-xl shadow-2xl border border-gray-100 z-20 overflow-hidden">
                   {sortOptions.map((option) => (
                     <button
                       key={option.value}
@@ -473,16 +474,16 @@ export default function Home() {
                 ))}
               </div>
             ) : (
-              <div className="card-elevated rounded-xl overflow-hidden mb-10">
+              <div className="card-elevated rounded-xl overflow-hidden mb-6 sm:mb-10">
                 {/* List Header */}
-                <div className="bg-gray-50 border-b border-gray-200 px-6 py-3">
+                <div className="bg-gray-50 border-b border-gray-200 px-4 sm:px-6 py-2.5 sm:py-3 hidden sm:block">
                   <div className="flex items-center justify-between gap-6">
                     <div className="flex-1">
                       <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Course</span>
                     </div>
                     <div className="flex items-center gap-6 flex-shrink-0">
-                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold w-20 text-right">Average</span>
-                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold w-16 text-right">Letter</span>
+                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold w-20 text-center">Average</span>
+                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold w-16 text-center">Letter</span>
                     </div>
                   </div>
                 </div>
@@ -506,44 +507,45 @@ export default function Home() {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="card-elevated rounded-xl p-6 mt-10">
-                <div className="flex items-center justify-between flex-wrap gap-5">
-                  <div className="text-sm text-gray-600 font-medium">
+              <div className="card-elevated rounded-xl p-4 sm:p-6 mt-6 sm:mt-10">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-5">
+                  <div className="text-xs sm:text-sm text-gray-600 font-medium text-center sm:text-left">
                     Showing <span className="font-semibold text-gray-900">{startIndex + 1}</span> to <span className="font-semibold text-gray-900">{Math.min(endIndex, sortedCourses.length)}</span> of <span className="font-semibold text-gray-900">{sortedCourses.length.toLocaleString()}</span> courses
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-center">
                     <button
                       onClick={goToPreviousPage}
                       disabled={currentPage === 1}
-                      className={`px-4 py-2.5 rounded-xl transition-all ${
+                      className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all ${
                         currentPage === 1
                           ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                           : 'btn-primary text-white hover:shadow-md'
                       }`}
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                       </svg>
                     </button>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap justify-center">
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
                         // Show first page, last page, current page, and pages around current
+                        // On mobile, show fewer pages
                         const showPage =
                           page === 1 ||
                           page === totalPages ||
-                          (page >= currentPage - 2 && page <= currentPage + 2);
+                          (page >= currentPage - 1 && page <= currentPage + 1);
 
                         if (!showPage) {
                           // Show ellipsis
                           const prevPage = page - 1;
                           const nextPage = page + 1;
                           if (
-                            (prevPage === 1 || prevPage === currentPage - 3) &&
-                            (nextPage === totalPages || nextPage === currentPage + 3)
+                            (prevPage === 1 || prevPage === currentPage - 2) &&
+                            (nextPage === totalPages || nextPage === currentPage + 2)
                           ) {
                             return (
-                              <span key={page} className="px-2 text-gray-400 font-medium">
+                              <span key={page} className="px-1 sm:px-2 text-gray-400 font-medium text-xs sm:text-sm">
                                 ...
                               </span>
                             );
@@ -555,7 +557,7 @@ export default function Home() {
                           <button
                             key={page}
                             onClick={() => goToPage(page)}
-                            className={`px-4 py-2.5 rounded-xl transition-all text-sm font-medium ${
+                            className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all text-xs sm:text-sm font-medium ${
                               currentPage === page
                                 ? 'btn-primary text-white shadow-md'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -570,13 +572,13 @@ export default function Home() {
                     <button
                       onClick={goToNextPage}
                       disabled={currentPage === totalPages}
-                      className={`px-4 py-2.5 rounded-xl transition-all ${
+                      className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all ${
                         currentPage === totalPages
                           ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                           : 'btn-primary text-white hover:shadow-md'
                       }`}
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                       </svg>
                     </button>

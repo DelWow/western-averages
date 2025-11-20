@@ -144,13 +144,13 @@ export default function CourseDetailPage() {
   return (
     <div className="min-h-screen bg-[#faf9f7] relative">
       <Header />
-      <main className="container mx-auto px-4 py-10 relative z-10">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-10 relative z-10">
         {/* Back Button */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors font-medium"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 sm:mb-6 transition-colors font-medium text-sm sm:text-base"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
           Back to All Courses
@@ -159,15 +159,15 @@ export default function CourseDetailPage() {
         {/* Course Detail Card */}
         <div className="card-elevated rounded-xl bg-white border-l-[4px] border-purple-600 overflow-hidden">
           {/* Header Section */}
-          <div className="bg-gradient-to-r from-purple-50 to-transparent px-8 py-8 border-b border-gray-100">
-            <div className="flex items-start justify-between gap-6 flex-wrap">
+          <div className="bg-gradient-to-r from-purple-50 to-transparent px-4 sm:px-6 md:px-8 py-6 sm:py-8 border-b border-gray-100">
+            <div className="flex items-start justify-between gap-4 sm:gap-6 flex-wrap">
               <div className="flex-1 min-w-0">
-                <h1 className="text-4xl font-black text-gray-900 mb-3 heading-display">{course.name}</h1>
-                <p className="text-xl text-gray-600 font-mono tracking-wider mb-4">{course.code}</p>
-                <div className="flex items-center gap-4 flex-wrap">
-                  <span className="text-gray-700 font-semibold">{course.department}</span>
-                  <span className="text-gray-400">•</span>
-                  <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-bold ${levelColors.text} ${levelColors.bg} border ${levelColors.border}`}>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 mb-2 sm:mb-3 heading-display">{course.name}</h1>
+                <p className="text-lg sm:text-xl text-gray-600 font-mono tracking-wider mb-3 sm:mb-4">{course.code}</p>
+                <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+                  <span className="text-sm sm:text-base text-gray-700 font-semibold">{course.department}</span>
+                  <span className="text-gray-400 hidden sm:inline">•</span>
+                  <span className={`inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-bold ${levelColors.text} ${levelColors.bg} border ${levelColors.border}`}>
                     {course.level}000 Level
                   </span>
                 </div>
@@ -176,28 +176,28 @@ export default function CourseDetailPage() {
           </div>
 
           {/* Content Section */}
-          <div className="px-8 py-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="px-4 sm:px-6 md:px-8 py-6 sm:py-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
               {/* Grade Information */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 heading-section">Grade Information</h2>
+              <div className="space-y-4 sm:space-y-6">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4 heading-section">Grade Information</h2>
                 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div>
                     <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 font-medium">Average Grade</p>
-                    <div className={`inline-flex items-baseline gap-2 px-4 py-3 rounded-xl ${gradeColors.bg}`}>
-                      <p className={`text-4xl font-black ${gradeColors.text} leading-none`}>
+                    <div className={`inline-flex items-baseline gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-xl ${gradeColors.bg}`}>
+                      <p className={`text-3xl sm:text-4xl font-black ${gradeColors.text} leading-none`}>
                         {course.avg_grade !== null ? course.avg_grade.toFixed(1) : '—'}
                       </p>
                       {course.avg_grade !== null && (
-                        <span className={`text-lg font-semibold ${gradeColors.text} opacity-70`}>%</span>
+                        <span className={`text-base sm:text-lg font-semibold ${gradeColors.text} opacity-70`}>%</span>
                       )}
                     </div>
                   </div>
 
                   <div>
                     <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 font-medium">Letter Grade</p>
-                    <div className={`inline-flex items-center justify-center w-20 h-20 rounded-xl ${gradeColors.bg} ${gradeColors.text} font-black text-3xl`}>
+                    <div className={`inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-xl ${gradeColors.bg} ${gradeColors.text} font-black text-2xl sm:text-3xl`}>
                       {getGradeLetter(course.avg_grade)}
                     </div>
                   </div>
@@ -205,23 +205,23 @@ export default function CourseDetailPage() {
               </div>
 
               {/* Course Details */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 heading-section">Course Details</h2>
+              <div className="space-y-4 sm:space-y-6">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4 heading-section">Course Details</h2>
                 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div>
                     <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 font-medium">Course Code</p>
-                    <p className="text-lg font-mono text-gray-900">{course.code}</p>
+                    <p className="text-base sm:text-lg font-mono text-gray-900">{course.code}</p>
                   </div>
 
                   <div>
                     <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 font-medium">Department</p>
-                    <p className="text-lg font-semibold text-gray-900">{course.department}</p>
+                    <p className="text-base sm:text-lg font-semibold text-gray-900">{course.department}</p>
                   </div>
 
                   <div>
                     <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 font-medium">Course Level</p>
-                    <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-bold ${levelColors.text} ${levelColors.bg} border ${levelColors.border}`}>
+                    <span className={`inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-bold ${levelColors.text} ${levelColors.bg} border ${levelColors.border}`}>
                       {course.level}000 Level
                     </span>
                   </div>
@@ -229,7 +229,7 @@ export default function CourseDetailPage() {
                   {course.created_at && (
                     <div>
                       <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 font-medium">Added to Database</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-xs sm:text-sm text-gray-600">
                         {new Date(course.created_at).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
@@ -245,13 +245,13 @@ export default function CourseDetailPage() {
         </div>
 
         {/* Disclaimer */}
-        <div className="mt-8 card-elevated rounded-xl p-4 bg-amber-50 border-l-4 border-amber-400">
-          <div className="flex items-start gap-3">
-            <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="mt-6 sm:mt-8 card-elevated rounded-xl p-3 sm:p-4 bg-amber-50 border-l-4 border-amber-400">
+          <div className="flex items-start gap-2 sm:gap-3">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <div className="flex-1">
-              <p className="text-sm text-amber-900 font-medium leading-relaxed">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-amber-900 font-medium leading-relaxed">
                 <span className="font-semibold">Disclaimer:</span> Course averages displayed here are not guaranteed to be completely accurate and rely on the goodwill of students sharing their course averages. These figures should be used as a general reference only.
               </p>
             </div>
@@ -259,10 +259,10 @@ export default function CourseDetailPage() {
         </div>
 
         {/* Student Averages Section */}
-        <div className="mt-8 space-y-6">
-          <div className="border-t border-gray-200 pt-8">
-            <h2 className="text-2xl font-black text-gray-900 mb-2 heading-section">Student-Submitted Averages</h2>
-            <p className="text-gray-600 mb-6">View and contribute to community-submitted course averages</p>
+        <div className="mt-6 sm:mt-8 space-y-4 sm:space-y-6">
+          <div className="border-t border-gray-200 pt-6 sm:pt-8">
+            <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-2 heading-section">Student-Submitted Averages</h2>
+            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">View and contribute to community-submitted course averages</p>
           </div>
 
           {/* Submit Form */}

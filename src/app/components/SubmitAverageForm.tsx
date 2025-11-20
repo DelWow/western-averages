@@ -93,16 +93,16 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
   };
 
   return (
-    <div className="card-elevated rounded-xl p-6 border-l-[3px] border-blue-500 bg-white">
-      <div className="flex items-start gap-3 mb-6">
-        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
-          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="card-elevated rounded-xl p-4 sm:p-6 border-l-[3px] border-blue-500 bg-white">
+      <div className="flex items-start gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
         </div>
-        <div className="flex-1">
-          <h2 className="text-2xl font-black text-gray-900 mb-1 heading-section">Submit Your Average</h2>
-          <p className="text-sm text-gray-600">Help other students by sharing your course average</p>
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-1 heading-section">Submit Your Average</h2>
+          <p className="text-xs sm:text-sm text-gray-600">Help other students by sharing your course average</p>
         </div>
       </div>
 
