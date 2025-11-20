@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Header from '../../components/Header';
 import SubmitAverageForm from '../../components/SubmitAverageForm';
 import UnverifiedAveragesSection from '../../components/UnverifiedAveragesSection';
+import TurnstileDebug from '../../components/TurnstileDebug';
 import { createClient } from '@/lib/supabase';
 
 interface Course {
@@ -143,6 +144,7 @@ export default function CourseDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#faf9f7] relative">
+      <TurnstileDebug />
       <Header />
       <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-10 relative z-10">
         {/* Back Button */}

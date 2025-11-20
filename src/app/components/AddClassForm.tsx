@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import Turnstile, { TurnstileRef } from './Turnstile';
 
 interface AddClassFormProps {
   onSubmit: (data: { className: string; classCode: string; average: number }) => void;
@@ -12,15 +13,72 @@ export default function AddClassForm({ onSubmit, onCancel, initialData }: AddCla
   const [className, setClassName] = useState(initialData?.className || '');
   const [classCode, setClassCode] = useState(initialData?.classCode || '');
   const [average, setAverage] = useState(initialData?.average.toString() || '');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileRef>(null);
+  
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    
     const avg = parseFloat(average);
-    if (className && classCode && !isNaN(avg) && avg >= 0 && avg <= 100) {
-      onSubmit({ className, classCode, average: avg });
-      setClassName('');
-      setClassCode('');
-      setAverage('');
+    
+    // Validation
+    if (!className || !classCode || isNaN(avg) || avg < 0 || avg > 100) {
+      setError('Please fill in all fields correctly');
+      return;
+    }
+
+    // Verify Turnstile token if site key is configured
+    if (turnstileSiteKey) {
+      if (!turnstileToken) {
+        setError('Please complete the verification challenge');
+        return;
+      }
+
+      // Verify token with our API
+      try {
+        const verifyResponse = await fetch('/api/turnstile/verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ token: turnstileToken }),
+        });
+
+        const verifyResult = await verifyResponse.json();
+
+        if (!verifyResult.success) {
+          setError('Verification failed. Please try again.');
+          setTurnstileToken(null);
+          if (turnstileRef.current) {
+            turnstileRef.current.resetTurnstile();
+          }
+          return;
+        }
+      } catch (verifyError) {
+        console.error('Turnstile verification error:', verifyError);
+        setError('Verification error. Please try again.');
+        setTurnstileToken(null);
+        if (turnstileRef.current) {
+          turnstileRef.current.resetTurnstile();
+        }
+        return;
+      }
+    }
+
+    // Submit the form
+    onSubmit({ className, classCode, average: avg });
+    setClassName('');
+    setClassCode('');
+    setAverage('');
+    setTurnstileToken(null);
+    
+    // Reset Turnstile
+    if (turnstileRef.current) {
+      turnstileRef.current.resetTurnstile();
     }
   };
 
@@ -75,10 +133,47 @@ export default function AddClassForm({ onSubmit, onCancel, initialData }: AddCla
             required
           />
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="flex items-start gap-2 text-sm text-red-600">
+            <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Turnstile Widget */}
+        {turnstileSiteKey && (
+          <div className="flex justify-center">
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={turnstileSiteKey}
+              onVerify={(token) => {
+                setTurnstileToken(token);
+                setError(null);
+              }}
+              onError={() => {
+                setTurnstileToken(null);
+                setError('Verification failed. Please try again.');
+              }}
+              onExpire={() => {
+                setTurnstileToken(null);
+              }}
+              theme="auto"
+              size="normal"
+            />
+          </div>
+        )}
+
         <div className="flex gap-3 pt-3">
           <button
             type="submit"
-            className="flex-1 btn-primary text-white px-6 py-3 rounded-xl hover:shadow-md transition-all font-semibold"
+            disabled={turnstileSiteKey && !turnstileToken}
+            className={`flex-1 btn-primary text-white px-6 py-3 rounded-xl hover:shadow-md transition-all font-semibold ${
+              turnstileSiteKey && !turnstileToken ? 'opacity-60 cursor-not-allowed' : ''
+            }`}
           >
             {initialData ? 'Update Class' : 'Add Class'}
           </button>

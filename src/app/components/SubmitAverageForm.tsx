@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase';
+import Turnstile, { TurnstileRef } from './Turnstile';
 
 interface SubmitAverageFormProps {
   courseId: number;
@@ -15,6 +16,10 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileRef>(null);
+  
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +43,44 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
     if (!year || isNaN(yearNum) || yearNum < 2000 || yearNum > new Date().getFullYear() + 1) {
       setError(`Please enter a valid year between 2000 and ${new Date().getFullYear() + 1}`);
       return;
+    }
+
+    // Verify Turnstile token if site key is configured
+    if (turnstileSiteKey) {
+      if (!turnstileToken) {
+        setError('Please complete the verification challenge');
+        return;
+      }
+
+      // Verify token with our API
+      try {
+        const verifyResponse = await fetch('/api/turnstile/verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ token: turnstileToken }),
+        });
+
+        const verifyResult = await verifyResponse.json();
+
+        if (!verifyResult.success) {
+          setError('Verification failed. Please try again.');
+          setTurnstileToken(null);
+          if (turnstileRef.current) {
+            turnstileRef.current.resetTurnstile();
+          }
+          return;
+        }
+      } catch (verifyError) {
+        console.error('Turnstile verification error:', verifyError);
+        setError('Verification error. Please try again.');
+        setTurnstileToken(null);
+        if (turnstileRef.current) {
+          turnstileRef.current.resetTurnstile();
+        }
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -74,6 +117,12 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
       setAverage('');
       setTerm('');
       setYear('');
+      setTurnstileToken(null);
+      
+      // Reset Turnstile
+      if (turnstileRef.current) {
+        turnstileRef.current.resetTurnstile();
+      }
       
       // Call success callback to refresh data
       if (onSuccess) {
@@ -228,11 +277,34 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
           </div>
         </div>
 
+        {/* Turnstile Widget */}
+        {turnstileSiteKey && (
+          <div className="flex justify-center">
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={turnstileSiteKey}
+              onVerify={(token) => {
+                setTurnstileToken(token);
+                setError(null);
+              }}
+              onError={() => {
+                setTurnstileToken(null);
+                setError('Verification failed. Please try again.');
+              }}
+              onExpire={() => {
+                setTurnstileToken(null);
+              }}
+              theme="auto"
+              size="normal"
+            />
+          </div>
+        )}
+
         <button
           type="submit"
-          disabled={isSubmitting || success}
+          disabled={isSubmitting || success || (!!turnstileSiteKey && !turnstileToken)}
           className={`w-full btn-primary text-white px-6 py-3 rounded-xl hover:shadow-md transition-all font-semibold ${
-            isSubmitting || success ? 'opacity-60 cursor-not-allowed' : ''
+            isSubmitting || success || (!!turnstileSiteKey && !turnstileToken) ? 'opacity-60 cursor-not-allowed' : ''
           }`}
         >
           {isSubmitting ? (

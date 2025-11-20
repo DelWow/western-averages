@@ -64,6 +64,8 @@ This project is configured to deploy on Netlify using the Next.js Runtime.
    - Add the following variables:
      - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
      - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+     - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` - Your Cloudflare Turnstile site key (optional, for bot protection)
+     - `TURNSTILE_SECRET_KEY` - Your Cloudflare Turnstile secret key (optional, for bot protection)
 
 5. **Deploy**
    - Click "Deploy site"
@@ -91,6 +93,8 @@ This project is configured to deploy on Netlify using the Next.js Runtime.
    ```bash
    netlify env:set NEXT_PUBLIC_SUPABASE_URL "your-supabase-url"
    netlify env:set NEXT_PUBLIC_SUPABASE_ANON_KEY "your-supabase-anon-key"
+   netlify env:set NEXT_PUBLIC_TURNSTILE_SITE_KEY "your-turnstile-site-key"
+   netlify env:set TURNSTILE_SECRET_KEY "your-turnstile-secret-key"
    ```
 
 ### Post-Deployment
@@ -104,6 +108,32 @@ This project is configured to deploy on Netlify using the Next.js Runtime.
 - If build fails, check the build logs in the Netlify dashboard
 - Ensure all environment variables are set correctly
 - Verify your Supabase project is accessible and the keys are correct
+
+## Cloudflare Turnstile Setup
+
+This project includes Cloudflare Turnstile for bot protection on forms. To enable it:
+
+1. **Get Turnstile Keys**
+   - Sign up for a Cloudflare account at [cloudflare.com](https://www.cloudflare.com)
+   - Go to the Turnstile dashboard: [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens)
+   - Create a new site and get your Site Key and Secret Key
+
+2. **Set Environment Variables**
+   - Create a `.env.local` file in the root directory (for local development)
+   - Add the following variables:
+     ```
+     NEXT_PUBLIC_TURNSTILE_SITE_KEY=your-site-key-here
+     TURNSTILE_SECRET_KEY=your-secret-key-here
+     ```
+   - For production (Netlify), add these in the Netlify dashboard under Environment variables
+
+3. **How It Works**
+   - Turnstile widgets will automatically appear on forms (`SubmitAverageForm` and `AddClassForm`)
+   - Users must complete the verification challenge before submitting
+   - Tokens are verified server-side via `/api/turnstile/verify`
+   - If Turnstile keys are not set, forms will work without verification (graceful degradation)
+
+**Note:** Turnstile is optional. If you don't set the environment variables, the forms will still work without bot protection.
 
 ## Deploy on Vercel
 
