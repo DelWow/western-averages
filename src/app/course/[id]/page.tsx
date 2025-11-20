@@ -8,6 +8,8 @@ import SubmitAverageForm from '../../components/SubmitAverageForm';
 import UnverifiedAveragesSection from '../../components/UnverifiedAveragesSection';
 import { createClient } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
 interface Course {
   id: number;
   code: string;

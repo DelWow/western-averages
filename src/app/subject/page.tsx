@@ -7,6 +7,8 @@ import ClassCard from '../components/ClassCard';
 import CourseListItem from '../components/CourseListItem';
 import { createClient } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
 interface Course {
   id: number;
   code: string;
