@@ -56,6 +56,10 @@ export default function UnverifiedAveragesSection({
 
         if (statsError) {
           // Fallback: calculate stats manually if function doesn't exist
+          // Suppress 404 errors for missing function (expected in some setups)
+          if (statsError.code !== 'PGRST116') {
+            console.warn('Stats function not available, using fallback:', statsError.message);
+          }
           const { data: submissions, error: submissionsError } = await supabase
             .from('student_averages')
             .select('*')
