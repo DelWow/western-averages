@@ -85,7 +85,7 @@ export default function UnverifiedAveragesSection({
           setStats(calculatedStats);
           setRecentSubmissions((submissions || []).slice(0, 10));
         } else {
-          setStats(statsData);
+          setStats(statsData as AverageStats);
           
           // Fetch recent submissions
           const { data: submissions, error: submissionsError } = await supabase
