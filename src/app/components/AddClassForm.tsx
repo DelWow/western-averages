@@ -170,9 +170,9 @@ export default function AddClassForm({ onSubmit, onCancel, initialData }: AddCla
         <div className="flex gap-3 pt-3">
           <button
             type="submit"
-            disabled={turnstileSiteKey && !turnstileToken}
+            disabled={!!turnstileSiteKey && !turnstileToken}
             className={`flex-1 btn-primary text-white px-6 py-3 rounded-xl hover:shadow-md transition-all font-semibold ${
-              turnstileSiteKey && !turnstileToken ? 'opacity-60 cursor-not-allowed' : ''
+              !!turnstileSiteKey && !turnstileToken ? 'opacity-60 cursor-not-allowed' : ''
             }`}
           >
             {initialData ? 'Update Class' : 'Add Class'}
