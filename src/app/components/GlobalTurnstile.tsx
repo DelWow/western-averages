@@ -7,6 +7,18 @@ import { useRef } from 'react';
 const TURNSTILE_TOKEN_KEY = 'turnstile_token';
 const TURNSTILE_TOKEN_EXPIRY = 'turnstile_token_expiry';
 
+// Check if we're running on localhost
+export function isLocalhost(): boolean {
+  if (typeof window === 'undefined') {
+    // Server-side: check environment variable or hostname
+    return process.env.NODE_ENV === 'development' || 
+           (typeof process !== 'undefined' && process.env.VERCEL_ENV !== 'production');
+  }
+  // Client-side: check window.location
+  const hostname = window.location.hostname;
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+}
+
 export function getTurnstileToken(): string | null {
   if (typeof window === 'undefined') return null;
   
@@ -89,8 +101,8 @@ export default function GlobalTurnstile() {
     setShowWidget(true);
   };
 
-  // Don't render anything if already verified or no site key
-  if (isVerified || !turnstileSiteKey) {
+  // Don't render anything if already verified, no site key, or on localhost
+  if (isVerified || !turnstileSiteKey || isLocalhost()) {
     return null;
   }
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase';
-import { getTurnstileToken, clearTurnstileToken } from './GlobalTurnstile';
+import { getTurnstileToken, clearTurnstileToken, isLocalhost } from './GlobalTurnstile';
 
 interface SubmitAverageFormProps {
   courseId: number;
@@ -52,8 +52,8 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
       return;
     }
 
-    // Verify Turnstile token if site key is configured
-    if (turnstileSiteKey) {
+    // Verify Turnstile token if site key is configured and not on localhost
+    if (turnstileSiteKey && !isLocalhost()) {
       // Get fresh token from sessionStorage
       const currentToken = getTurnstileToken();
       if (!currentToken) {
@@ -279,7 +279,7 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
         </div>
 
         {/* Show message if verification needed */}
-        {turnstileSiteKey && !turnstileToken && (
+        {turnstileSiteKey && !turnstileToken && !isLocalhost() && (
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
             <p className="text-xs text-amber-800 text-center">
               <span className="font-semibold">Note:</span> Please complete the verification challenge that appears when you first visit the site to submit forms.
@@ -289,9 +289,9 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
 
         <button
           type="submit"
-          disabled={isSubmitting || success || (!!turnstileSiteKey && !turnstileToken)}
+          disabled={isSubmitting || success || (!!turnstileSiteKey && !turnstileToken && !isLocalhost())}
           className={`w-full btn-primary text-white px-6 py-3 rounded-xl hover:shadow-md transition-all font-semibold ${
-            isSubmitting || success || (!!turnstileSiteKey && !turnstileToken) ? 'opacity-60 cursor-not-allowed' : ''
+            isSubmitting || success || (!!turnstileSiteKey && !turnstileToken && !isLocalhost()) ? 'opacity-60 cursor-not-allowed' : ''
           }`}
         >
           {isSubmitting ? (

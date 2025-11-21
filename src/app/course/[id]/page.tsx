@@ -18,6 +18,16 @@ interface Course {
   created_at: string;
 }
 
+interface CourseExam {
+  id: string;
+  title: string;
+  exam_type: string;
+  term: string | null;
+  year: number | null;
+  storage_bucket: string;
+  storage_path: string;
+}
+
 export default function CourseDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -26,6 +36,8 @@ export default function CourseDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [exams, setExams] = useState<CourseExam[]>([]);
+  const [loadingExams, setLoadingExams] = useState(true);
 
   useEffect(() => {
     async function fetchCourse() {
@@ -64,6 +76,38 @@ export default function CourseDetailPage() {
     }
 
     fetchCourse();
+  }, [courseId]);
+
+  // Fetch exams for this course
+  useEffect(() => {
+    async function fetchExams() {
+      if (!courseId) return;
+
+      try {
+        const supabase = createClient();
+        const { data, error: fetchError } = await supabase
+          .from('course_exams')
+          .select('id, title, exam_type, term, year, storage_bucket, storage_path')
+          .eq('course_id', courseId)
+          .order('year', { ascending: false, nullsFirst: false })
+          .order('term', { ascending: false, nullsFirst: false });
+
+        if (fetchError) {
+          console.error('Error fetching exams:', fetchError);
+          return;
+        }
+
+        if (data) {
+          setExams(data);
+        }
+      } catch (err) {
+        console.error('Error fetching exams:', err);
+      } finally {
+        setLoadingExams(false);
+      }
+    }
+
+    fetchExams();
   }, [courseId]);
 
   const getLevelColor = (level: number) => {
@@ -277,6 +321,86 @@ export default function CourseDetailPage() {
             verifiedAverage={course.avg_grade}
             refreshTrigger={refreshTrigger}
           />
+        </div>
+
+        {/* Class Documents Section */}
+        <div className="mt-6 sm:mt-8 space-y-4 sm:space-y-6">
+          <div className="border-t border-gray-200 pt-6 sm:pt-8">
+            <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-2 heading-section">Class Documents</h2>
+            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">Download class documents and materials for this course</p>
+          </div>
+
+          {loadingExams ? (
+            <div className="card-elevated rounded-xl p-8 text-center bg-white">
+              <div className="animate-spin rounded-full h-8 w-8 border-[3px] border-purple-200 border-t-purple-600 mx-auto mb-3"></div>
+              <p className="text-gray-600 text-sm">Loading documents...</p>
+            </div>
+          ) : exams.length === 0 ? (
+            <div className="card-elevated rounded-xl p-6 sm:p-8 bg-white border border-gray-200">
+              <div className="text-center">
+                <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p className="text-gray-600 font-medium">No class documents available yet</p>
+                <p className="text-sm text-gray-500 mt-1">Check back later for course materials</p>
+              </div>
+            </div>
+          ) : (
+            <div className="card-elevated rounded-xl bg-white overflow-hidden">
+              <div className="divide-y divide-gray-100">
+                {exams.map((exam) => {
+                  const supabase = createClient();
+                  const { data: urlData } = supabase.storage
+                    .from(exam.storage_bucket)
+                    .getPublicUrl(exam.storage_path);
+                  const downloadUrl = urlData.publicUrl;
+
+                  // Use neutral color for all documents
+                  const getExamTypeColor = () => {
+                    return 'bg-gray-100 text-gray-700 border-gray-200';
+                  };
+
+                  // Map exam types to generic "Document" label for plausible deniability
+                  const examTypeLabel = 'Document';
+
+                  return (
+                    <div key={exam.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-start justify-between gap-4 flex-wrap">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2 flex-wrap">
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900">{exam.title}</h3>
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold border ${getExamTypeColor()}`}>
+                              {examTypeLabel}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600 flex-wrap">
+                            {exam.term && (
+                              <>
+                                <span>{exam.term}</span>
+                                {exam.year && <span>•</span>}
+                              </>
+                            )}
+                            {exam.year && <span>{exam.year}</span>}
+                          </div>
+                        </div>
+                        <a
+                          href={downloadUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 btn-primary text-white px-4 py-2 rounded-xl hover:shadow-md transition-all font-semibold text-sm whitespace-nowrap"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Download
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </main>
 

@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
+    // Skip Turnstile verification on localhost
+    const hostname = request.headers.get('host') || '';
+    const isLocalhost = hostname.includes('localhost') || hostname.includes('127.0.0.1') || hostname.includes('[::1]');
+    
+    if (isLocalhost) {
+      return NextResponse.json({ success: true });
+    }
+
     const { token } = await request.json();
 
     if (!token) {

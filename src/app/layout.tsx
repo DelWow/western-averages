@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import GlobalTurnstile from './components/GlobalTurnstile';
+import TurnstileScript from './components/TurnstileScript';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,11 +39,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Load Cloudflare Turnstile script using Next.js Script component for better compatibility with corporate networks */}
-        <Script
-          src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-          strategy="lazyOnload"
-        />
+        {/* Load Cloudflare Turnstile script only if not on localhost */}
+        <TurnstileScript />
         <GlobalTurnstile />
         {children}
       </body>
