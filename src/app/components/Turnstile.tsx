@@ -54,20 +54,66 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
   }, [siteKey]);
 
   useEffect(() => {
-    // Check if script is already loaded
+    // Check if script is already loaded (from Next.js Script component in layout)
     if (window.turnstile) {
       setIsLoaded(true);
       return;
     }
 
-    // Check if script tag already exists
+    // Check if script tag already exists (from Next.js Script component)
     const existingScript = document.querySelector('script[src="https://challenges.cloudflare.com/turnstile/v0/api.js"]');
     if (existingScript) {
-      existingScript.addEventListener('load', () => setIsLoaded(true));
-      return;
+      // Script is loading via Next.js Script component, wait for it
+      let checkTurnstile: NodeJS.Timeout | null = null;
+      let timeoutId: NodeJS.Timeout | null = null;
+
+      // Set a timeout to detect if script fails to load (e.g., corporate network blocking)
+      timeoutId = setTimeout(() => {
+        if (!window.turnstile) {
+          setError('Network restriction detected. Please try using cellular data or a different network.');
+          if (checkTurnstile) clearInterval(checkTurnstile);
+        }
+      }, 10000); // 10 second timeout
+
+      checkTurnstile = setInterval(() => {
+        if (window.turnstile) {
+          setIsLoaded(true);
+          if (checkTurnstile) clearInterval(checkTurnstile);
+          if (timeoutId) clearTimeout(timeoutId);
+        }
+      }, 100);
+
+      // Also listen for load event
+      existingScript.addEventListener('load', () => {
+        setIsLoaded(true);
+        if (checkTurnstile) clearInterval(checkTurnstile);
+        if (timeoutId) clearTimeout(timeoutId);
+      });
+
+      // Handle script load errors (e.g., corporate network blocking)
+      existingScript.addEventListener('error', () => {
+        setError('Network restriction detected. Please try using cellular data or a different network.');
+        if (checkTurnstile) clearInterval(checkTurnstile);
+        if (timeoutId) clearTimeout(timeoutId);
+      });
+
+      // Cleanup interval on unmount
+      return () => {
+        if (checkTurnstile) clearInterval(checkTurnstile);
+        if (timeoutId) clearTimeout(timeoutId);
+        // Cleanup: remove widget only (don't remove script as it might be used by other instances)
+        if (widgetIdRef.current && window.turnstile) {
+          try {
+            window.turnstile.remove(widgetIdRef.current);
+          } catch (e) {
+            // Ignore cleanup errors
+          }
+        }
+      };
     }
 
-    // Load Turnstile script
+    // Fallback: If Next.js Script component didn't load it, try dynamic loading
+    // (This should rarely happen, but provides a fallback)
     const script = document.createElement('script');
     script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
     script.async = true;
@@ -78,7 +124,7 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
     };
     
     script.onerror = () => {
-      setError('Failed to load Turnstile script');
+      setError('Network restriction detected. Please try using cellular data or a different network.');
     };
 
     document.body.appendChild(script);
@@ -167,10 +213,15 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
   }), [reset]);
 
   // Show error only for critical errors (not verification failures)
-  if (error && (error.includes('not configured') || error.includes('Failed to render'))) {
+  if (error && (error.includes('not configured') || error.includes('Failed to render') || error.includes('Network restriction'))) {
     return (
       <div className={`text-red-600 text-sm ${className}`}>
-        <p>{error}</p>
+        <p className="mb-2">{error}</p>
+        {error.includes('Network restriction') && (
+          <p className="text-xs text-gray-600 mb-2">
+            This often happens on corporate WiFi networks. Try switching to cellular data or a personal network.
+          </p>
+        )}
         <button
           onClick={reset}
           className="mt-2 text-xs underline hover:no-underline"
