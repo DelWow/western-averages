@@ -20,7 +20,6 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
   
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
 
-  // Get token from sessionStorage on mount
   useEffect(() => {
     const token = getTurnstileToken();
     if (token) {
@@ -36,7 +35,6 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
     const avg = parseFloat(average);
     const yearNum = parseInt(year);
     
-    // Validation
     if (isNaN(avg) || avg < 0 || avg > 100) {
       setError('Please enter a valid average between 0 and 100');
       return;
@@ -52,18 +50,14 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
       return;
     }
 
-    // Verify Turnstile token if site key is configured
     if (turnstileSiteKey) {
-      // Get fresh token from sessionStorage
       const currentToken = getTurnstileToken();
       if (!currentToken) {
         setError('Please complete the verification challenge that appears when you first visit the site');
         return;
       }
-      // Use the token from sessionStorage
       setTurnstileToken(currentToken);
 
-      // Verify token with our API
       try {
         const verifyResponse = await fetch('/api/turnstile/verify', {
           method: 'POST',
@@ -76,7 +70,6 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
         const verifyResult = await verifyResponse.json();
 
         if (!verifyResult.success) {
-          // Token invalid, clear it so user can verify again
           clearTurnstileToken();
           setTurnstileToken(null);
           setError('Verification expired. Please refresh the page to verify again.');
@@ -94,8 +87,6 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
     try {
       const supabase = createClient();
       
-      // Get user's IP address (if available)
-      // Note: This is a client-side approach. For production, consider using a server-side API route
       const response = await fetch('https://api.ipify.org?format=json').catch(() => null);
       const ipData = response ? await response.json().catch(() => null) : null;
       const ipAddress = ipData?.ip || null;
@@ -118,14 +109,11 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
         return;
       }
 
-      // Success
       setSuccess(true);
       setAverage('');
       setTerm('');
       setYear('');
-      // Don't clear token - keep it for future submissions
       
-      // Call success callback to refresh data
       if (onSuccess) {
         setTimeout(() => {
           onSuccess();
@@ -143,24 +131,22 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
   };
 
   return (
-    <div className="card-elevated rounded-xl p-4 sm:p-6 border-l-[3px] border-blue-500 bg-white">
-      <div className="flex items-start gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-blue-50 flex items-center justify-center">
-          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="bg-white border border-gray-200">
+      <div className="bg-blue-50 border-b border-blue-100 px-4 sm:px-6 py-3">
+        <div className="flex items-center gap-2">
+          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
+          <h2 className="font-display font-semibold text-gray-900">Submit Your Average</h2>
         </div>
-        <div className="flex-1 min-w-0">
-          <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-1 heading-section">Submit Your Average</h2>
-          <p className="text-xs sm:text-sm text-gray-600">Help other students by sharing your course average</p>
-        </div>
+        <p className="text-sm text-gray-600 mt-1">Help other students by sharing your course average</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Term Selection */}
           <div>
-            <label htmlFor="term" className="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">
+            <label htmlFor="term" className="block text-xs uppercase tracking-wider text-gray-500 mb-1.5 font-medium">
               Term
             </label>
             <select
@@ -171,7 +157,7 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
                 setError(null);
                 setSuccess(false);
               }}
-              className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all bg-white text-gray-900 font-medium ${
+              className={`w-full px-3 py-2.5 border text-sm focus:outline-none focus:ring-2 focus:ring-[#4F2683] focus:border-transparent ${
                 error && !term ? 'border-red-300 bg-red-50' : 'border-gray-200'
               }`}
               required
@@ -186,7 +172,7 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
 
           {/* Year Input */}
           <div>
-            <label htmlFor="year" className="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">
+            <label htmlFor="year" className="block text-xs uppercase tracking-wider text-gray-500 mb-1.5 font-medium">
               Year
             </label>
             <input
@@ -198,7 +184,7 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
                 setError(null);
                 setSuccess(false);
               }}
-              className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all bg-white text-gray-900 font-medium ${
+              className={`w-full px-3 py-2.5 border text-sm focus:outline-none focus:ring-2 focus:ring-[#4F2683] focus:border-transparent ${
                 error && (!year || isNaN(parseInt(year))) ? 'border-red-300 bg-red-50' : 'border-gray-200'
               }`}
               placeholder="e.g., 2024"
@@ -212,7 +198,7 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
 
         {/* Average Input */}
         <div>
-          <label htmlFor="average" className="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">
+          <label htmlFor="average" className="block text-xs uppercase tracking-wider text-gray-500 mb-1.5 font-medium">
             Your Course Average (%)
           </label>
           <div className="relative">
@@ -225,7 +211,7 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
                 setError(null);
                 setSuccess(false);
               }}
-              className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all bg-white text-gray-900 font-medium ${
+              className={`w-full px-3 py-2.5 border text-sm focus:outline-none focus:ring-2 focus:ring-[#4F2683] focus:border-transparent ${
                 error ? 'border-red-300 bg-red-50' : success ? 'border-green-300 bg-green-50' : 'border-gray-200'
               }`}
               placeholder="e.g., 85.5"
@@ -236,14 +222,14 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
               disabled={isSubmitting || success}
             />
             {average && !error && !success && (
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">%</div>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</div>
             )}
           </div>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="flex items-start gap-2 text-sm text-red-600">
+          <div className="flex items-start gap-2 text-sm text-red-600 bg-red-50 p-3 border border-red-200">
             <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -253,7 +239,7 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
 
         {/* Success Message */}
         {success && (
-          <div className="flex items-start gap-2 text-sm text-green-600">
+          <div className="flex items-start gap-2 text-sm text-green-700 bg-green-50 p-3 border border-green-200">
             <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -261,28 +247,27 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
           </div>
         )}
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <p className="text-xs text-blue-800 leading-relaxed">
-            <span className="font-semibold">Note:</span> Your submission will be marked as unverified and will help build a community-driven average for this course.
+        <div className="bg-blue-50 border border-blue-200 p-3">
+          <p className="text-xs text-blue-800">
+            <strong>Note:</strong> Your submission will be marked as unverified and will help build a community-driven average for this course.
           </p>
         </div>
 
-        <div className="bg-amber-50 border border-amber-300 rounded-lg p-3">
+        <div className="bg-amber-50 border border-amber-200 p-3">
           <div className="flex items-start gap-2">
             <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            <p className="text-xs text-amber-900 leading-relaxed">
-              <span className="font-semibold">Important:</span> Once submitted, your average cannot be removed or edited. Please double-check your information before submitting.
+            <p className="text-xs text-amber-900">
+              <strong>Important:</strong> Once submitted, your average cannot be removed or edited. Please double-check your information before submitting.
             </p>
           </div>
         </div>
 
-        {/* Show message if verification needed */}
         {turnstileSiteKey && !turnstileToken && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+          <div className="bg-amber-50 border border-amber-200 p-3">
             <p className="text-xs text-amber-800 text-center">
-              <span className="font-semibold">Note:</span> Please complete the verification challenge that appears when you first visit the site to submit forms.
+              <strong>Note:</strong> Please complete the verification challenge that appears when you first visit the site to submit forms.
             </p>
           </div>
         )}
@@ -290,13 +275,13 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
         <button
           type="submit"
           disabled={isSubmitting || success || (!!turnstileSiteKey && !turnstileToken)}
-          className={`w-full btn-primary text-white px-6 py-3 rounded-xl hover:shadow-md transition-all font-semibold ${
+          className={`w-full bg-[#4F2683] text-white px-4 py-2.5 text-sm font-medium hover:bg-[#3D1E66] transition-colors ${
             isSubmitting || success || (!!turnstileSiteKey && !turnstileToken) ? 'opacity-60 cursor-not-allowed' : ''
           }`}
         >
           {isSubmitting ? (
             <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -304,7 +289,7 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
             </span>
           ) : success ? (
             <span className="flex items-center justify-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
               Submitted!
@@ -317,4 +302,3 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
     </div>
   );
 }
-
