@@ -11,14 +11,12 @@ export default function Header() {
       <div className="container mx-auto px-4 sm:px-6">
         {/* Top bar */}
         <div className="flex items-center justify-between py-4 border-b border-white/10">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded flex items-center justify-center">
-              <span className="text-[#4F2683] font-bold text-lg font-display">W</span>
-            </div>
-            <div>
-              <div className="text-lg font-semibold tracking-tight">Course Averages</div>
-              <div className="text-xs text-white/70 tracking-wide">Western University</div>
-            </div>
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-xl tracking-tight">
+              <span className="font-bold">Western</span> Averages
+            </span>
+            <span className="text-white/50">|</span>
+            <span className="text-sm text-white/80">Class Grade Tracker</span>
           </Link>
           
           <nav className="flex items-center gap-1">
