@@ -1,145 +1,68 @@
 @import "tailwindcss";
 
 :root {
-  --background: #faf9f7;
+  /* Official Western University Colors */
+  --western-purple: #4F2683;
+  --western-purple-dark: #3D1E66;
+  --western-purple-light: #6B3FA0;
+  --western-gray: #4A4A4A;
+  --western-light-gray: #F5F5F5;
+  
+  --background: #ffffff;
   --foreground: #1a1a1a;
-  --western-purple: #4A148C;
-  --western-purple-light: #6A1B9A;
-  --western-purple-dark: #38006B;
-  --accent-gold: #D4AF37;
-  --accent-teal: #2D7D7D;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-source-sans);
+  --font-serif: var(--font-source-serif);
 }
 
 html {
-  background: var(--western-purple-dark);
+  background: #4F2683;
   min-height: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-  letter-spacing: -0.01em;
+  font-family: var(--font-source-sans), 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   min-height: 100vh;
+  line-height: 1.6;
 }
 
-/* Subtle texture overlay */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(circle at 1px 1px, rgba(0,0,0,0.015) 1px, transparent 0);
-  background-size: 20px 20px;
-  pointer-events: none;
-  z-index: 0;
+/* Typography */
+.font-display {
+  font-family: var(--font-source-serif), 'Source Serif 4', Georgia, 'Times New Roman', serif;
 }
 
-/* Western University Purple Theme */
-.bg-purple-900 {
-  background: linear-gradient(135deg, var(--western-purple-dark) 0%, #2d0052 100%);
+h1, h2, h3 {
+  font-family: var(--font-source-serif), 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
-.bg-purple-600 {
+/* Western Purple overrides */
+.bg-western {
   background-color: var(--western-purple);
 }
 
-.bg-purple-700 {
-  background-color: var(--western-purple-light);
+.bg-western-dark {
+  background-color: var(--western-purple-dark);
 }
 
-.border-purple-600 {
-  border-color: var(--western-purple);
-}
-
-.text-purple-600 {
+.text-western {
   color: var(--western-purple);
 }
 
-.text-purple-200 {
-  color: #CE93D8;
+.border-western {
+  border-color: var(--western-purple);
 }
 
-.text-purple-300 {
-  color: #BA68C8;
-}
-
-/* Custom card styles */
-.card-elevated {
-  background: white;
-  box-shadow: 
-    0 1px 3px rgba(0,0,0,0.05),
-    0 4px 12px rgba(0,0,0,0.08),
-    0 0 0 1px rgba(0,0,0,0.03);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card-elevated:hover {
-  transform: translateY(-2px);
-  box-shadow: 
-    0 4px 6px rgba(0,0,0,0.07),
-    0 8px 24px rgba(0,0,0,0.12),
-    0 0 0 1px rgba(0,0,0,0.05);
-}
-
-/* Custom button styles */
-.btn-primary {
-  background: linear-gradient(135deg, var(--western-purple) 0%, var(--western-purple-light) 100%);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
-}
-
-.btn-primary:hover::before {
-  left: 100%;
-}
-
-/* Typography variations */
-.heading-display {
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-}
-
-.heading-section {
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-/* Subtle accent borders */
-.accent-border-left {
-  border-left: 3px solid;
-  border-image: linear-gradient(to bottom, var(--western-purple), var(--accent-gold)) 1;
-}
-
-/* Stats card gradient */
-.stats-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f7f5 100%);
-}
-
-/* Custom scrollbar */
+/* Custom scrollbar - subtle */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -147,10 +70,100 @@ body::before {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 5px;
+  background: #ccc;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: #aaa;
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--western-purple);
+  outline-offset: 2px;
+}
+
+/* Links */
+a {
+  transition: color 0.15s ease;
+}
+
+/* Buttons */
+.btn-western {
+  background-color: var(--western-purple);
+  color: white;
+  transition: background-color 0.15s ease;
+}
+
+.btn-western:hover {
+  background-color: var(--western-purple-dark);
+}
+
+/* Card base */
+.card {
+  background: white;
+  border: 1px solid #e5e5e5;
+  transition: box-shadow 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Table styles */
+.table-header {
+  background-color: var(--western-light-gray);
+  border-bottom: 2px solid var(--western-purple);
+}
+
+/* Grade colors - more muted, academic */
+.grade-a {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+}
+
+.grade-b {
+  background-color: #E3F2FD;
+  color: #1565C0;
+}
+
+.grade-c {
+  background-color: #FFF8E1;
+  color: #F57F17;
+}
+
+.grade-d {
+  background-color: #FFEBEE;
+  color: #C62828;
+}
+
+.grade-na {
+  background-color: #F5F5F5;
+  color: #757575;
+}
+
+/* Level badges */
+.level-1 {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid #C8E6C9;
+}
+
+.level-2 {
+  background-color: #E3F2FD;
+  color: #1565C0;
+  border: 1px solid #BBDEFB;
+}
+
+.level-3 {
+  background-color: #F3E5F5;
+  color: #7B1FA2;
+  border: 1px solid #E1BEE7;
+}
+
+.level-4 {
+  background-color: #FFF3E0;
+  color: #E65100;
+  border: 1px solid #FFCC80;
 }

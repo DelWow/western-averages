@@ -40,7 +40,6 @@ function SubjectPageContent() {
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   const [subjectSearch, setSubjectSearch] = useState('');
 
-  // Load all courses and extract unique subjects with counts
   useEffect(() => {
     async function fetchData() {
       try {
@@ -73,16 +72,13 @@ function SubjectPageContent() {
           }
         }
 
-        // Deduplicate courses by ID
         const uniqueCourses = Array.from(
           new Map(allCourses.map(course => [course.id, course])).values()
         );
 
-        // Fetch unverified averages for all courses
         const courseIdsSet = new Set(uniqueCourses.map(c => c.id));
         const unverifiedAveragesMap = new Map<number, number>();
         
-        // Fetch all student averages in batches (without filtering by course_id to avoid limits)
         let allSubmissions: { course_id: number; grade: number }[] = [];
         let submissionsFrom = 0;
         const submissionsPageSize = 1000;
@@ -99,7 +95,6 @@ function SubjectPageContent() {
           }
 
           if (submissionsData && submissionsData.length > 0) {
-            // Filter to only include courses we care about
             const filteredSubmissions = submissionsData.filter(s => courseIdsSet.has(s.course_id));
             allSubmissions = [...allSubmissions, ...filteredSubmissions];
             submissionsFrom += submissionsPageSize;
@@ -112,7 +107,6 @@ function SubjectPageContent() {
           }
         }
 
-        // Calculate unverified averages per course
         const courseGradesMap = new Map<number, number[]>();
         allSubmissions.forEach(submission => {
           const courseId = submission.course_id;
@@ -125,7 +119,6 @@ function SubjectPageContent() {
           }
         });
 
-        // Calculate averages
         courseGradesMap.forEach((grades, courseId) => {
           if (grades.length > 0) {
             const sum = grades.reduce((a, b) => a + b, 0);
@@ -134,7 +127,6 @@ function SubjectPageContent() {
           }
         });
 
-        // Add unverified averages to courses
         const coursesWithUnverified = uniqueCourses.map(course => ({
           ...course,
           unverified_average: unverifiedAveragesMap.get(course.id) || null
@@ -142,7 +134,6 @@ function SubjectPageContent() {
 
         setCourses(coursesWithUnverified);
         
-        // Calculate subject counts
         const subjectMap = new Map<string, number>();
         coursesWithUnverified.forEach(course => {
           if (course.department) {
@@ -156,7 +147,6 @@ function SubjectPageContent() {
 
         setSubjects(subjectsWithCounts);
         
-        // If a subject is selected from URL, filter courses
         if (selectedSubjectParam) {
           const filtered = coursesWithUnverified.filter(c => c.department === selectedSubjectParam);
           setFilteredCourses(filtered);
@@ -172,7 +162,6 @@ function SubjectPageContent() {
     fetchData();
   }, [selectedSubjectParam]);
 
-  // Filter courses when subject is selected
   useEffect(() => {
     if (selectedSubject) {
       const filtered = courses.filter(c => c.department === selectedSubject);
@@ -184,7 +173,6 @@ function SubjectPageContent() {
     }
   }, [selectedSubject, courses, router]);
 
-  // Filter subjects based on search
   const filteredSubjects = useMemo(() => {
     if (!subjectSearch.trim()) return subjects;
     const searchLower = subjectSearch.toLowerCase();
@@ -193,7 +181,6 @@ function SubjectPageContent() {
     );
   }, [subjects, subjectSearch]);
 
-  // Close sort menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -208,7 +195,6 @@ function SubjectPageContent() {
     }
   }, [showSortMenu]);
 
-  // Helper function to get letter grade from numeric grade
   const getGradeLetter = (grade: number | null): string => {
     if (grade === null) return 'Z';
     if (grade >= 90) return 'A+';
@@ -226,7 +212,6 @@ function SubjectPageContent() {
     return 'F';
   };
 
-  // Sort courses based on selected option
   const sortedCourses = [...filteredCourses].sort((a, b) => {
     switch (sortOption) {
       case 'letter-grade': {
@@ -254,7 +239,6 @@ function SubjectPageContent() {
       case 'unverified-low-high': {
         const avgA = a.unverified_average ?? Infinity;
         const avgB = b.unverified_average ?? Infinity;
-        // If both are Infinity (null), sort by verified average or alphabetically
         if (avgA === Infinity && avgB === Infinity) {
           if (a.avg_grade !== null && b.avg_grade !== null) {
             return a.avg_grade - b.avg_grade;
@@ -266,7 +250,6 @@ function SubjectPageContent() {
       case 'unverified-high-low': {
         const avgA = a.unverified_average ?? -Infinity;
         const avgB = b.unverified_average ?? -Infinity;
-        // If both are -Infinity (null), sort by verified average or alphabetically
         if (avgA === -Infinity && avgB === -Infinity) {
           if (a.avg_grade !== null && b.avg_grade !== null) {
             return b.avg_grade - a.avg_grade;
@@ -285,21 +268,19 @@ function SubjectPageContent() {
 
   const sortOptions: { value: SortOption; label: string }[] = [
     { value: 'letter-grade', label: 'Letter Grade' },
-    { value: 'avg-low-high', label: 'Verified Average: Lowest to Highest' },
-    { value: 'avg-high-low', label: 'Verified Average: Highest to Lowest' },
-    { value: 'unverified-low-high', label: 'Unverified Average: Lowest to Highest' },
-    { value: 'unverified-high-low', label: 'Unverified Average: Highest to Lowest' },
+    { value: 'avg-low-high', label: 'Verified: Low to High' },
+    { value: 'avg-high-low', label: 'Verified: High to Low' },
+    { value: 'unverified-low-high', label: 'Unverified: Low to High' },
+    { value: 'unverified-high-low', label: 'Unverified: High to Low' },
     { value: 'alphabetical', label: 'Alphabetical' },
   ];
 
   const handleSubjectClick = (subjectName: string) => {
     if (selectedSubject === subjectName) {
-      // Deselect if clicking the same subject
       setSelectedSubject('');
     } else {
       setSelectedSubject(subjectName);
     }
-    // Scroll to courses section
     setTimeout(() => {
       const coursesSection = document.getElementById('courses-section');
       if (coursesSection) {
@@ -309,34 +290,34 @@ function SubjectPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] relative">
+    <div className="min-h-screen bg-white">
       <Header />
-      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-10 relative z-10">
-        {/* Disclaimer Banner */}
-        <div className="mb-4 sm:mb-6 card-elevated rounded-xl p-3 sm:p-4 bg-amber-50 border-l-4 border-amber-400">
-          <div className="flex items-start gap-2 sm:gap-3">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      
+      <main className="container mx-auto px-4 sm:px-6 py-8">
+        {/* Notice Banner */}
+        <div className="mb-6 bg-amber-50 border-l-4 border-amber-400 p-4">
+          <div className="flex gap-3">
+            <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm text-amber-900 font-medium leading-relaxed">
-                <span className="font-semibold">Disclaimer:</span> Course averages displayed here are not guaranteed to be completely accurate and rely on the goodwill of students sharing their course averages. These figures should be used as a general reference only.
-              </p>
-            </div>
+            <p className="text-sm text-amber-900">
+              <strong>Note:</strong> Course averages are community-submitted and may not be completely accurate. Use as a general reference only.
+            </p>
           </div>
         </div>
 
-        <div className="mb-6 sm:mb-10">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 mb-2 sm:mb-3 heading-display">Browse by Subject</h1>
-          <p className="text-gray-600 text-base sm:text-lg font-light">Select a subject to explore its courses</p>
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-display font-semibold text-gray-900 mb-2">Browse by Subject</h1>
+          <p className="text-gray-600">Select a subject to explore its courses</p>
         </div>
 
-        {/* Subject Selection Section */}
-        <div className="mb-10">
-          {/* Search Bar */}
-          <div className="mb-4 sm:mb-6">
-            <div className="relative">
-              <svg className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Subject Selection */}
+        <div className="mb-8">
+          {/* Search */}
+          <div className="mb-4">
+            <div className="relative max-w-md">
+              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -344,14 +325,14 @@ function SubjectPageContent() {
                 placeholder="Search subjects..."
                 value={subjectSearch}
                 onChange={(e) => setSubjectSearch(e.target.value)}
-                className="w-full pl-10 sm:pl-12 pr-10 sm:pr-4 py-2.5 sm:py-3.5 rounded-xl border border-gray-200 bg-white text-sm sm:text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4F2683] focus:border-transparent"
               />
               {subjectSearch && (
                 <button
                   onClick={() => setSubjectSearch('')}
-                  className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -361,14 +342,14 @@ function SubjectPageContent() {
 
           {/* Selected Subject Badge */}
           {selectedSubject && (
-            <div className="mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3 flex-wrap">
-              <span className="text-xs sm:text-sm text-gray-600 font-medium">Selected:</span>
+            <div className="mb-4 flex items-center gap-2">
+              <span className="text-sm text-gray-600">Selected:</span>
               <button
                 onClick={() => setSelectedSubject('')}
-                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-100 text-purple-700 rounded-lg text-xs sm:text-sm font-semibold hover:bg-purple-200 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#4F2683]/10 text-[#4F2683] text-sm font-medium hover:bg-[#4F2683]/20 transition-colors"
               >
-                <span className="truncate max-w-[150px] sm:max-w-none">{selectedSubject}</span>
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {selectedSubject}
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -377,38 +358,38 @@ function SubjectPageContent() {
 
           {/* Subjects Grid */}
           {loading ? (
-            <div className="card-elevated rounded-xl p-12 sm:p-16 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 sm:h-14 sm:w-14 border-[3px] border-purple-200 border-t-purple-600 mx-auto mb-4 sm:mb-5"></div>
-              <p className="text-sm sm:text-base text-gray-600 font-medium">Loading subjects...</p>
+            <div className="bg-white border border-gray-200 p-12 text-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-gray-200 border-t-[#4F2683] mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading subjects...</p>
             </div>
           ) : filteredSubjects.length === 0 ? (
-            <div className="card-elevated rounded-xl p-12 sm:p-16 text-center">
-              <svg className="w-16 h-16 sm:w-20 sm:h-20 text-gray-300 mx-auto mb-4 sm:mb-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white border border-gray-200 p-12 text-center">
+              <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">No subjects found</h3>
-              <p className="text-sm sm:text-base text-gray-500">
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">No subjects found</h3>
+              <p className="text-gray-500 text-sm">
                 {subjectSearch ? `No subjects match "${subjectSearch}"` : 'No subjects available'}
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
               {filteredSubjects.map((subject) => {
                 const isSelected = selectedSubject === subject.name;
                 return (
                   <button
                     key={subject.name}
                     onClick={() => handleSubjectClick(subject.name)}
-                    className={`card-elevated rounded-xl p-3 sm:p-4 text-left transition-all ${
+                    className={`p-3 text-left transition-all border ${
                       isSelected
-                        ? 'bg-purple-600 text-white border-2 border-purple-700 shadow-lg transform scale-105'
-                        : 'bg-white text-gray-900 hover:bg-purple-50 hover:border-purple-200 border-2 border-transparent'
+                        ? 'bg-[#4F2683] text-white border-[#4F2683]'
+                        : 'bg-white text-gray-900 border-gray-200 hover:border-[#4F2683]'
                     }`}
                   >
-                    <div className="font-bold text-sm sm:text-base mb-1 truncate" title={subject.name}>
+                    <div className="font-medium text-sm truncate" title={subject.name}>
                       {subject.name}
                     </div>
-                    <div className={`text-xs sm:text-sm ${isSelected ? 'text-purple-100' : 'text-gray-500'}`}>
+                    <div className={`text-xs mt-1 ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
                       {subject.count} {subject.count === 1 ? 'course' : 'courses'}
                     </div>
                   </button>
@@ -420,27 +401,27 @@ function SubjectPageContent() {
 
         {/* Courses Section */}
         {selectedSubject && (
-          <div id="courses-section" className="mb-6 sm:mb-10">
-            <div className="mb-6 sm:mb-8 flex items-start justify-between flex-wrap gap-4 sm:gap-6">
-              <div className="max-w-2xl w-full sm:w-auto">
-                <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-1 sm:mb-2 heading-section">
-                  Courses in {selectedSubject}
+          <div id="courses-section" className="mb-8">
+            <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-display font-semibold text-gray-900">
+                  {selectedSubject}
                 </h2>
-                <p className="text-sm sm:text-base text-gray-600 font-light">
-                  {filteredCourses.length.toLocaleString()} {filteredCourses.length === 1 ? 'course' : 'courses'} found
+                <p className="text-sm text-gray-600">
+                  {filteredCourses.length} {filteredCourses.length === 1 ? 'course' : 'courses'}
                 </p>
               </div>
-              <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              
+              <div className="flex items-center gap-2">
                 {/* View Toggle */}
-                <div className="flex items-center bg-white rounded-xl p-1 shadow-sm border border-gray-200">
+                <div className="flex items-center border border-gray-200 bg-white">
                   <button
                     onClick={() => setViewMode('cards')}
-                    className={`px-4 py-2 rounded-lg transition-all text-sm font-medium flex items-center gap-2 ${
+                    className={`px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
                       viewMode === 'cards'
-                        ? 'bg-purple-600 text-white shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-[#4F2683] text-white'
+                        : 'text-gray-600 hover:bg-gray-50'
                     }`}
-                    title="Card view"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -449,12 +430,11 @@ function SubjectPageContent() {
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`px-4 py-2 rounded-lg transition-all text-sm font-medium flex items-center gap-2 ${
+                    className={`px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
                       viewMode === 'list'
-                        ? 'bg-purple-600 text-white shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-[#4F2683] text-white'
+                        : 'text-gray-600 hover:bg-gray-50'
                     }`}
-                    title="List view"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -462,23 +442,23 @@ function SubjectPageContent() {
                     <span className="hidden sm:inline">List</span>
                   </button>
                 </div>
-                {/* Sort Button */}
-                <div className="relative sort-menu-container flex-1 sm:flex-none">
+
+                {/* Sort Dropdown */}
+                <div className="relative sort-menu-container">
                   <button
                     onClick={() => setShowSortMenu(!showSortMenu)}
-                    className="btn-primary text-white px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl hover:shadow-lg transition-all flex items-center gap-1.5 sm:gap-2.5 shadow-sm font-medium text-xs sm:text-sm w-full sm:w-auto justify-center"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#4F2683] text-white text-sm font-medium hover:bg-[#3D1E66] transition-colors"
                   >
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
                     </svg>
-                    <span className="hidden sm:inline">Sort:</span>
-                    <span className="truncate max-w-[120px] sm:max-w-none">{sortOptions.find(opt => opt.value === sortOption)?.label}</span>
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-0.5 sm:ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span className="hidden sm:inline">Sort</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
                   {showSortMenu && (
-                    <div className="absolute right-0 sm:right-0 mt-2 w-[calc(100vw-2rem)] sm:w-72 max-w-[calc(100vw-2rem)] sm:max-w-none bg-white rounded-xl shadow-2xl border border-gray-100 z-20 overflow-hidden">
+                    <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 shadow-lg z-20">
                       {sortOptions.map((option) => (
                         <button
                           key={option.value}
@@ -486,8 +466,8 @@ function SubjectPageContent() {
                             setSortOption(option.value);
                             setShowSortMenu(false);
                           }}
-                          className={`w-full text-left px-5 py-3.5 hover:bg-purple-50 transition-colors text-sm ${
-                            sortOption === option.value ? 'bg-purple-100 text-purple-700 font-semibold' : 'text-gray-700 font-medium'
+                          className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors ${
+                            sortOption === option.value ? 'bg-[#4F2683]/10 text-[#4F2683] font-medium' : 'text-gray-700'
                           }`}
                         >
                           {option.label}
@@ -501,17 +481,17 @@ function SubjectPageContent() {
 
             {/* Courses Display */}
             {filteredCourses.length === 0 ? (
-              <div className="card-elevated rounded-xl p-16 text-center">
-                <svg className="w-20 h-20 text-gray-300 mx-auto mb-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-white border border-gray-200 p-12 text-center">
+                <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">No courses found</h3>
-                <p className="text-gray-500">No courses available for {selectedSubject}.</p>
+                <h3 className="text-lg font-semibold text-gray-800 mb-1">No courses found</h3>
+                <p className="text-gray-500 text-sm">No courses available for {selectedSubject}.</p>
               </div>
             ) : (
               <>
                 {viewMode === 'cards' ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {sortedCourses.map((course, index) => (
                       <ClassCard
                         key={`${course.id}-${index}`}
@@ -526,21 +506,19 @@ function SubjectPageContent() {
                     ))}
                   </div>
                 ) : (
-                  <div className="card-elevated rounded-xl overflow-hidden">
+                  <div className="bg-white border border-gray-200">
                     {/* List Header */}
-                    <div className="bg-gray-50 border-b border-gray-200 px-4 sm:px-6 py-2.5 sm:py-3 hidden sm:block">
-                      <div className="flex items-center justify-between gap-6">
-                        <div className="flex-1">
-                          <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Course</span>
-                        </div>
-                        <div className="flex items-center gap-6 flex-shrink-0">
-                          <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold w-20 text-center">Average</span>
-                          <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold w-16 text-center">Letter</span>
+                    <div className="bg-gray-50 border-b-2 border-[#4F2683] px-4 sm:px-5 py-3 hidden sm:block">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs uppercase tracking-wider text-gray-500 font-medium">Course</span>
+                        <div className="flex items-center gap-8">
+                          <span className="text-xs uppercase tracking-wider text-gray-500 font-medium w-20 text-right">Average</span>
+                          <span className="text-xs uppercase tracking-wider text-gray-500 font-medium w-10 text-center">Grade</span>
                         </div>
                       </div>
                     </div>
                     {/* List Items */}
-                    <div className="divide-y divide-gray-100">
+                    <div>
                       {sortedCourses.map((course, index) => (
                         <CourseListItem
                           key={`${course.id}-${index}`}
@@ -561,32 +539,34 @@ function SubjectPageContent() {
           </div>
         )}
 
-        {/* Show message when no subject is selected */}
+        {/* No Subject Selected Message */}
         {!selectedSubject && !loading && (
-          <div className="card-elevated rounded-xl p-16 text-center">
-            <svg className="w-20 h-20 text-gray-300 mx-auto mb-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white border border-gray-200 p-12 text-center">
+            <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Select a Subject</h3>
-            <p className="text-gray-500">Click on a subject above to view its courses.</p>
+            <h3 className="text-lg font-semibold text-gray-800 mb-1">Select a Subject</h3>
+            <p className="text-gray-500 text-sm">Click on a subject above to view its courses.</p>
           </div>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="bg-purple-900 text-white mt-16 py-8 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2z'/%3E%3C/g%3E%3C/svg%3E")`,
-        }}></div>
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <a 
-            href="https://www.linkedin.com/in/annas-amar/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-purple-200/90 hover:text-purple-100 underline transition-colors font-medium"
-          >
-            LinkedIn
-          </a>
+      <footer className="bg-[#4F2683] text-white mt-12 py-6">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-white/80">
+              Western University Course Averages
+            </div>
+            <a 
+              href="https://www.linkedin.com/in/annas-amar/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm text-white/80 hover:text-white transition-colors"
+            >
+              Created by Annas Amar
+            </a>
+          </div>
         </div>
       </footer>
     </div>
@@ -596,12 +576,12 @@ function SubjectPageContent() {
 export default function SubjectPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#faf9f7] relative">
+      <div className="min-h-screen bg-white">
         <Header />
-        <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-10 relative z-10">
-          <div className="card-elevated rounded-xl p-16 text-center">
-            <div className="animate-spin rounded-full h-14 w-14 border-[3px] border-purple-200 border-t-purple-600 mx-auto mb-5"></div>
-            <p className="text-gray-600 font-medium">Loading...</p>
+        <main className="container mx-auto px-4 sm:px-6 py-8">
+          <div className="bg-white border border-gray-200 p-12 text-center">
+            <div className="animate-spin rounded-full h-10 w-10 border-2 border-gray-200 border-t-[#4F2683] mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
           </div>
         </main>
       </div>
