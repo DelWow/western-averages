@@ -13,23 +13,23 @@ interface ClassCardProps {
 }
 
 export default function ClassCard({ id, code, name, department, level, avgGrade, unverifiedAverage }: ClassCardProps) {
-  const getLevelColor = (level: number) => {
-    if (level >= 4) return { text: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-200' };
-    if (level >= 3) return { text: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200' };
-    if (level >= 2) return { text: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200' };
-    return { text: 'text-slate-700', bg: 'bg-slate-50', border: 'border-slate-200' };
+  const getLevelClass = (level: number) => {
+    if (level >= 4) return 'level-4';
+    if (level >= 3) return 'level-3';
+    if (level >= 2) return 'level-2';
+    return 'level-1';
   };
 
-  const getGradeColor = (grade: number | null) => {
-    if (grade === null) return { text: 'text-slate-400', bg: 'bg-slate-50' };
-    if (grade >= 80) return { text: 'text-emerald-700', bg: 'bg-emerald-50' };
-    if (grade >= 70) return { text: 'text-blue-700', bg: 'bg-blue-50' };
-    if (grade >= 60) return { text: 'text-amber-700', bg: 'bg-amber-50' };
-    return { text: 'text-red-700', bg: 'bg-red-50' };
+  const getGradeClass = (grade: number | null) => {
+    if (grade === null) return 'grade-na';
+    if (grade >= 80) return 'grade-a';
+    if (grade >= 70) return 'grade-b';
+    if (grade >= 60) return 'grade-c';
+    return 'grade-d';
   };
 
   const getGradeLetter = (grade: number | null) => {
-    if (grade === null) return 'N/A';
+    if (grade === null) return '—';
     if (grade >= 90) return 'A+';
     if (grade >= 85) return 'A';
     if (grade >= 80) return 'A-';
@@ -45,85 +45,58 @@ export default function ClassCard({ id, code, name, department, level, avgGrade,
     return 'F';
   };
 
-  const levelColors = getLevelColor(level);
-  const gradeColors = getGradeColor(avgGrade ?? unverifiedAverage);
+  const displayGrade = avgGrade ?? unverifiedAverage;
+  const isUnverified = avgGrade === null && unverifiedAverage !== null;
 
   return (
-    <Link href={`/course/${id}`} className="block card-elevated rounded-xl p-4 sm:p-5 border-l-[3px] border-purple-600 bg-white relative overflow-hidden group hover:shadow-lg transition-all cursor-pointer">
-      {/* Subtle gradient accent */}
-      <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+    <Link 
+      href={`/course/${id}`} 
+      className="block bg-white border border-gray-200 hover:border-[#4F2683] hover:shadow-md transition-all"
+    >
+      {/* Purple accent bar */}
+      <div className="h-1 bg-[#4F2683]" />
       
-      <div className="relative z-10">
-        <div className="mb-3 sm:mb-4 pb-2.5 sm:pb-3 border-b border-gray-100">
-          <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1 sm:mb-1.5 leading-tight heading-section">{name}</h3>
-          <p className="text-[10px] sm:text-xs text-gray-500 font-mono tracking-wider">{code}</p>
+      <div className="p-4">
+        {/* Course code and level */}
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <span className="text-xs font-mono text-gray-500 tracking-wide">{code}</span>
+          <span className={`text-xs font-medium px-2 py-0.5 ${getLevelClass(level)}`}>
+            {level}000
+          </span>
         </div>
         
-        <div className="space-y-3 sm:space-y-4">
-          {/* Grade Display */}
-          <div className="flex items-end justify-between gap-3 sm:gap-4">
-            <div className="flex-1 min-w-0">
-              {avgGrade !== null ? (
-                <>
-                  <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest mb-1 sm:mb-1.5 font-medium">Verified Average</p>
-                  <div className={`inline-flex items-baseline gap-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg ${gradeColors.bg}`}>
-                    <p className={`text-xl sm:text-2xl font-black ${gradeColors.text} leading-none`}>
-                      {avgGrade.toFixed(1)}
-                    </p>
-                    <span className={`text-[10px] sm:text-xs font-semibold ${gradeColors.text} opacity-70`}>%</span>
-                  </div>
-                  {unverifiedAverage !== null && unverifiedAverage !== undefined && (
-                    <div className="mt-1.5 sm:mt-2">
-                      <p className="text-[8px] sm:text-[9px] text-gray-400 uppercase tracking-widest mb-0.5 sm:mb-1 font-medium">Unverified</p>
-                      <p className="text-xs sm:text-sm font-semibold text-gray-600">
-                        {unverifiedAverage.toFixed(1)}%
-                      </p>
-                    </div>
-                  )}
-                </>
-              ) : unverifiedAverage !== null && unverifiedAverage !== undefined ? (
-                <>
-                  <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest mb-1 sm:mb-1.5 font-medium">Unverified Average</p>
-                  <div className={`inline-flex items-baseline gap-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg ${gradeColors.bg}`}>
-                    <p className={`text-xl sm:text-2xl font-black ${gradeColors.text} leading-none`}>
-                      {unverifiedAverage.toFixed(1)}
-                    </p>
-                    <span className={`text-[10px] sm:text-xs font-semibold ${gradeColors.text} opacity-70`}>%</span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest mb-1 sm:mb-1.5 font-medium">Average</p>
-                  <div className={`inline-flex items-baseline gap-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg ${gradeColors.bg}`}>
-                    <p className={`text-xl sm:text-2xl font-black ${gradeColors.text} leading-none`}>—</p>
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest mb-1 sm:mb-1.5 font-medium">Letter</p>
-              <div className={`inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${gradeColors.bg} ${gradeColors.text} font-black text-lg sm:text-xl`}>
-                {getGradeLetter(avgGrade ?? unverifiedAverage)}
-              </div>
-            </div>
-          </div>
-
-          {/* Subject & Level */}
-          <div className="flex items-center justify-between gap-2 sm:gap-3 pt-2.5 sm:pt-3 border-t border-gray-100">
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest mb-0.5 sm:mb-1 font-medium">Subject</p>
-              <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">{department}</p>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-widest mb-0.5 sm:mb-1 font-medium">Level</p>
-              <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-bold ${levelColors.text} ${levelColors.bg} border ${levelColors.border}`}>
-                {level}000
+        {/* Course name */}
+        <h3 className="font-display text-base font-semibold text-gray-900 mb-3 leading-snug line-clamp-2">
+          {name}
+        </h3>
+        
+        {/* Department */}
+        <p className="text-xs text-gray-500 mb-4">{department}</p>
+        
+        {/* Grade section */}
+        <div className="flex items-end justify-between pt-3 border-t border-gray-100">
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">
+              {isUnverified ? 'Unverified Avg' : 'Class Average'}
+            </p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-semibold text-gray-900">
+                {displayGrade !== null ? displayGrade.toFixed(1) : '—'}
               </span>
+              {displayGrade !== null && <span className="text-sm text-gray-400">%</span>}
             </div>
+            {avgGrade !== null && unverifiedAverage !== null && (
+              <p className="text-xs text-gray-400 mt-1">
+                Unverified: {unverifiedAverage.toFixed(1)}%
+              </p>
+            )}
+          </div>
+          
+          <div className={`w-12 h-12 flex items-center justify-center font-semibold text-lg ${getGradeClass(displayGrade)}`}>
+            {getGradeLetter(displayGrade)}
           </div>
         </div>
       </div>
     </Link>
   );
 }
-
