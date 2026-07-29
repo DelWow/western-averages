@@ -6,6 +6,7 @@ import Header from '../components/Header';
 import ClassCard from '../components/ClassCard';
 import CourseListItem from '../components/CourseListItem';
 import { createClient } from '@/lib/supabase';
+import { compareSqctGrades } from '@/lib/sqct';
 
 interface Course {
   id: number;
@@ -14,6 +15,7 @@ interface Course {
   department: string;
   level: number;
   avg_grade: number | null;
+  sqct_grade: string | number | null;
   unverified_average: number | null;
   created_at: string;
 }
@@ -23,7 +25,15 @@ interface SubjectWithCount {
   count: number;
 }
 
-type SortOption = 'letter-grade' | 'avg-low-high' | 'avg-high-low' | 'unverified-low-high' | 'unverified-high-low' | 'alphabetical';
+type SortOption =
+  | 'letter-grade'
+  | 'avg-low-high'
+  | 'avg-high-low'
+  | 'unverified-low-high'
+  | 'unverified-high-low'
+  | 'sqct-low-high'
+  | 'sqct-high-low'
+  | 'alphabetical';
 
 function SubjectPageContent() {
   const router = useRouter();
@@ -258,6 +268,12 @@ function SubjectPageContent() {
         }
         return avgB - avgA;
       }
+      case 'sqct-low-high': {
+        return compareSqctGrades(a.sqct_grade, b.sqct_grade, 'ascending');
+      }
+      case 'sqct-high-low': {
+        return compareSqctGrades(a.sqct_grade, b.sqct_grade, 'descending');
+      }
       case 'alphabetical': {
         return a.name.localeCompare(b.name);
       }
@@ -272,6 +288,8 @@ function SubjectPageContent() {
     { value: 'avg-high-low', label: 'Verified: High to Low' },
     { value: 'unverified-low-high', label: 'Unverified: Low to High' },
     { value: 'unverified-high-low', label: 'Unverified: High to Low' },
+    { value: 'sqct-low-high', label: 'SQCT: Low to High' },
+    { value: 'sqct-high-low', label: 'SQCT: High to Low' },
     { value: 'alphabetical', label: 'Alphabetical' },
   ];
 
@@ -501,6 +519,7 @@ function SubjectPageContent() {
                         department={course.department}
                         level={course.level}
                         avgGrade={course.avg_grade}
+                        sqctGrade={course.sqct_grade}
                         unverifiedAverage={course.unverified_average}
                       />
                     ))}

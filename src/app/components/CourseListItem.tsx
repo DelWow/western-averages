@@ -9,10 +9,20 @@ interface CourseListItemProps {
   department: string;
   level: number;
   avgGrade: number | null;
-  unverifiedAverage: number | null;
+  unverifiedAverage?: number | null;
+  showUnverified?: boolean;
 }
 
-export default function CourseListItem({ id, code, name, department, level, avgGrade, unverifiedAverage }: CourseListItemProps) {
+export default function CourseListItem({
+  id,
+  code,
+  name,
+  department,
+  level,
+  avgGrade,
+  unverifiedAverage = null,
+  showUnverified = true,
+}: CourseListItemProps) {
   const getLevelClass = (level: number) => {
     if (level >= 4) return 'level-4';
     if (level >= 3) return 'level-3';
@@ -45,8 +55,8 @@ export default function CourseListItem({ id, code, name, department, level, avgG
     return 'F';
   };
 
-  const displayGrade = avgGrade ?? unverifiedAverage;
-  const isUnverified = avgGrade === null && unverifiedAverage !== null;
+  const displayGrade = showUnverified ? (avgGrade ?? unverifiedAverage) : avgGrade;
+  const isUnverified = showUnverified && avgGrade === null && unverifiedAverage !== null;
 
   return (
     <Link 
@@ -78,7 +88,7 @@ export default function CourseListItem({ id, code, name, department, level, avgG
               </span>
               {displayGrade !== null && <span className="text-xs text-gray-400">%</span>}
             </div>
-            {avgGrade !== null && unverifiedAverage !== null && (
+            {showUnverified && avgGrade !== null && unverifiedAverage !== null && (
               <p className="text-[10px] text-gray-400">
                 Unverified: {unverifiedAverage.toFixed(1)}%
               </p>

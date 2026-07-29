@@ -6,6 +6,7 @@ import ClassCard from './components/ClassCard';
 import CourseListItem from './components/CourseListItem';
 import StatsCard from './components/StatsCard';
 import { createClient } from '@/lib/supabase';
+import { compareSqctGrades } from '@/lib/sqct';
 
 interface Course {
   id: number;
@@ -14,11 +15,18 @@ interface Course {
   department: string;
   level: number;
   avg_grade: number | null;
-  unverified_average: number | null;
+  sqct_grade: string | number | null;
   created_at: string;
 }
 
-type SortOption = 'letter-grade' | 'avg-low-high' | 'avg-high-low' | 'unverified-low-high' | 'unverified-high-low' | 'alphabetical' | 'level';
+type SortOption =
+  | 'letter-grade'
+  | 'avg-low-high'
+  | 'avg-high-low'
+  | 'sqct-low-high'
+  | 'sqct-high-low'
+  | 'alphabetical'
+  | 'level';
 
 export default function Home() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -66,63 +74,7 @@ export default function Home() {
           new Map(allCourses.map(course => [course.id, course])).values()
         );
 
-        const courseIdsSet = new Set(uniqueCourses.map(c => c.id));
-        const unverifiedAveragesMap = new Map<number, number>();
-        
-        let allSubmissions: { course_id: number; grade: number }[] = [];
-        let submissionsFrom = 0;
-        const submissionsPageSize = 1000;
-        
-        while (true) {
-          const { data: submissionsData, error: submissionsError } = await supabase
-            .from('student_averages')
-            .select('course_id, grade')
-            .range(submissionsFrom, submissionsFrom + submissionsPageSize - 1);
-
-          if (submissionsError) {
-            console.error('Error fetching student averages:', submissionsError);
-            break;
-          }
-
-          if (submissionsData && submissionsData.length > 0) {
-            const filteredSubmissions = submissionsData.filter(s => courseIdsSet.has(s.course_id));
-            allSubmissions = [...allSubmissions, ...filteredSubmissions];
-            submissionsFrom += submissionsPageSize;
-            
-            if (submissionsData.length < submissionsPageSize) {
-              break;
-            }
-          } else {
-            break;
-          }
-        }
-
-        const courseGradesMap = new Map<number, number[]>();
-        allSubmissions.forEach(submission => {
-          const courseId = submission.course_id;
-          const grade = typeof submission.grade === 'string' ? parseFloat(submission.grade) : submission.grade;
-          if (!isNaN(grade) && isFinite(grade)) {
-            if (!courseGradesMap.has(courseId)) {
-              courseGradesMap.set(courseId, []);
-            }
-            courseGradesMap.get(courseId)!.push(grade);
-          }
-        });
-
-        courseGradesMap.forEach((grades, courseId) => {
-          if (grades.length > 0) {
-            const sum = grades.reduce((a, b) => a + b, 0);
-            const average = sum / grades.length;
-            unverifiedAveragesMap.set(courseId, parseFloat(average.toFixed(2)));
-          }
-        });
-
-        const coursesWithUnverified = uniqueCourses.map(course => ({
-          ...course,
-          unverified_average: unverifiedAveragesMap.has(course.id) ? unverifiedAveragesMap.get(course.id)! : null
-        }));
-
-        setCourses(coursesWithUnverified);
+        setCourses(uniqueCourses);
       } catch (error) {
         console.error('Error fetching courses:', error);
       } finally {
@@ -215,35 +167,11 @@ export default function Home() {
         
         return (b.avg_grade ?? 0) - (a.avg_grade ?? 0);
       }
-      case 'unverified-low-high': {
-        const aIsNull = a.unverified_average === null;
-        const bIsNull = b.unverified_average === null;
-        
-        if (aIsNull && !bIsNull) return 1;
-        if (!aIsNull && bIsNull) return -1;
-        if (aIsNull && bIsNull) {
-          if (a.avg_grade !== null && b.avg_grade !== null) {
-            return a.avg_grade - b.avg_grade;
-          }
-          return a.name.localeCompare(b.name);
-        }
-        
-        return (a.unverified_average ?? 0) - (b.unverified_average ?? 0);
+      case 'sqct-low-high': {
+        return compareSqctGrades(a.sqct_grade, b.sqct_grade, 'ascending');
       }
-      case 'unverified-high-low': {
-        const aIsNull = a.unverified_average === null;
-        const bIsNull = b.unverified_average === null;
-        
-        if (aIsNull && !bIsNull) return 1;
-        if (!aIsNull && bIsNull) return -1;
-        if (aIsNull && bIsNull) {
-          if (a.avg_grade !== null && b.avg_grade !== null) {
-            return b.avg_grade - a.avg_grade;
-          }
-          return a.name.localeCompare(b.name);
-        }
-        
-        return (b.unverified_average ?? 0) - (a.unverified_average ?? 0);
+      case 'sqct-high-low': {
+        return compareSqctGrades(a.sqct_grade, b.sqct_grade, 'descending');
       }
       case 'alphabetical': {
         return a.name.localeCompare(b.name);
@@ -260,8 +188,8 @@ export default function Home() {
     { value: 'letter-grade', label: 'Letter Grade' },
     { value: 'avg-low-high', label: 'Verified: Low to High' },
     { value: 'avg-high-low', label: 'Verified: High to Low' },
-    { value: 'unverified-low-high', label: 'Unverified: Low to High' },
-    { value: 'unverified-high-low', label: 'Unverified: High to Low' },
+    { value: 'sqct-low-high', label: 'SQCT: Low to High' },
+    { value: 'sqct-high-low', label: 'SQCT: High to Low' },
     { value: 'level', label: 'Course Level' },
     { value: 'alphabetical', label: 'Alphabetical' },
   ];
@@ -270,6 +198,9 @@ export default function Home() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedCourses = sortedCourses.slice(startIndex, endIndex);
+  const coursesWithSqctGrades = courses.filter(
+    course => course.sqct_grade !== null && String(course.sqct_grade).trim() !== ''
+  ).length;
 
   const goToPage = (page: number) => {
     setCurrentPage(page);
@@ -328,14 +259,24 @@ export default function Home() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           <StatsCard
             title="Total Courses"
             value={courses.length.toLocaleString()}
-            subtitle={`${courses.filter(c => c.avg_grade !== null).length.toLocaleString()} with verified averages`}
+            subtitle={`${courses.filter(c => c.avg_grade !== null).length.toLocaleString()} with verified course averages`}
             icon={
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            }
+          />
+          <StatsCard
+            title="SQCT Coverage"
+            value={coursesWithSqctGrades.toLocaleString()}
+            subtitle="Courses with 2025 SQCT grades"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6M9 8h6m4 13H5a2 2 0 01-2-2V5a2 2 0 012-2h10l6 6v10a2 2 0 01-2 2z" />
               </svg>
             }
           />
@@ -445,7 +386,8 @@ export default function Home() {
                     department={course.department}
                     level={course.level}
                     avgGrade={course.avg_grade}
-                    unverifiedAverage={course.unverified_average}
+                    sqctGrade={course.sqct_grade}
+                    showUnverified={false}
                   />
                 ))}
               </div>
@@ -472,7 +414,7 @@ export default function Home() {
                       department={course.department}
                       level={course.level}
                       avgGrade={course.avg_grade}
-                      unverifiedAverage={course.unverified_average}
+                      showUnverified={false}
                     />
                   ))}
                 </div>

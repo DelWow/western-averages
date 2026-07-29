@@ -15,6 +15,7 @@ interface Course {
   department: string;
   level: number;
   avg_grade: number | null;
+  sqct_grade: string | number | null;
   created_at: string;
 }
 
@@ -173,7 +174,7 @@ export default function CourseDetailPage() {
             </div>
 
             {/* Grade Display */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6 border-t border-gray-100">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 border-t border-gray-100">
               <div>
                 <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">Class Average</p>
                 <div className="flex items-baseline gap-1">
@@ -188,6 +189,15 @@ export default function CourseDetailPage() {
                 <div className={`inline-flex items-center justify-center w-16 h-16 text-2xl font-semibold ${getGradeClass(course.avg_grade)}`}>
                   {getGradeLetter(course.avg_grade)}
                 </div>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">SQCT Grade</p>
+                <div className="inline-flex min-w-16 h-16 px-4 items-center justify-center bg-[#4F2683]/10 text-[#4F2683] text-2xl font-semibold">
+                  {course.sqct_grade === null || course.sqct_grade === '' ? '—' : course.sqct_grade}
+                </div>
+                <p className="text-xs text-gray-500 mt-2 max-w-xs">
+                  Based on Western&apos;s 2025 Student Questionnaires on Courses and Teaching—student feedback about the course and its teaching.
+                </p>
               </div>
             </div>
           </div>

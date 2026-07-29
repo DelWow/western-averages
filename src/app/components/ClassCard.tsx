@@ -9,10 +9,22 @@ interface ClassCardProps {
   department: string;
   level: number;
   avgGrade: number | null;
-  unverifiedAverage: number | null;
+  sqctGrade?: string | number | null;
+  unverifiedAverage?: number | null;
+  showUnverified?: boolean;
 }
 
-export default function ClassCard({ id, code, name, department, level, avgGrade, unverifiedAverage }: ClassCardProps) {
+export default function ClassCard({
+  id,
+  code,
+  name,
+  department,
+  level,
+  avgGrade,
+  sqctGrade = null,
+  unverifiedAverage = null,
+  showUnverified = true,
+}: ClassCardProps) {
   const getLevelClass = (level: number) => {
     if (level >= 4) return 'level-4';
     if (level >= 3) return 'level-3';
@@ -45,8 +57,9 @@ export default function ClassCard({ id, code, name, department, level, avgGrade,
     return 'F';
   };
 
-  const displayGrade = avgGrade ?? unverifiedAverage;
-  const isUnverified = avgGrade === null && unverifiedAverage !== null;
+  const displayGrade = showUnverified ? (avgGrade ?? unverifiedAverage) : avgGrade;
+  const isUnverified = showUnverified && avgGrade === null && unverifiedAverage !== null;
+  const displaySqctGrade = sqctGrade === null || sqctGrade === '' ? '—' : sqctGrade;
 
   return (
     <Link 
@@ -72,6 +85,33 @@ export default function ClassCard({ id, code, name, department, level, avgGrade,
         
         {/* Department */}
         <p className="text-xs text-gray-500 mb-4">{department}</p>
+
+        {/* SQCT Grade */}
+        <div className="flex items-center justify-between gap-3 py-2.5 px-3 mb-3 bg-gray-50 border border-gray-100">
+          <div>
+            <div className="flex items-center gap-1.5">
+              <p className="text-[10px] uppercase tracking-wider text-gray-500">SQCT Grade</p>
+              <span
+                className="group relative inline-flex text-gray-400 hover:text-[#4F2683] focus:text-[#4F2683] focus:outline-none"
+                tabIndex={0}
+                aria-label="About SQCT grades"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" strokeWidth="2" />
+                  <path strokeLinecap="round" strokeWidth="2" d="M12 11v5m0-8h.01" />
+                </svg>
+                <span
+                  role="tooltip"
+                  className="pointer-events-none absolute left-1/2 bottom-full z-20 mb-2 w-64 -translate-x-1/2 bg-gray-900 px-3 py-2 text-[11px] normal-case leading-relaxed tracking-normal text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus:opacity-100"
+                >
+                  SQCT stands for Student Questionnaires on Courses and Teaching. This grade is based on 2025 student feedback.
+                </span>
+              </span>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-0.5">2025 results</p>
+          </div>
+          <span className="text-sm font-semibold text-[#4F2683]">{displaySqctGrade}</span>
+        </div>
         
         {/* Grade section */}
         <div className="flex items-end justify-between pt-3 border-t border-gray-100">
@@ -85,7 +125,7 @@ export default function ClassCard({ id, code, name, department, level, avgGrade,
               </span>
               {displayGrade !== null && <span className="text-sm text-gray-400">%</span>}
             </div>
-            {avgGrade !== null && unverifiedAverage !== null && (
+            {showUnverified && avgGrade !== null && unverifiedAverage !== null && (
               <p className="text-xs text-gray-400 mt-1">
                 Unverified: {unverifiedAverage.toFixed(1)}%
               </p>
