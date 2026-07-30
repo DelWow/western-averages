@@ -3,6 +3,7 @@ import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import GlobalTurnstile from './components/GlobalTurnstile';
+import VisitTracker from './components/VisitTracker';
 
 const sourceSans = Source_Sans_3({
   variable: "--font-source-sans",
@@ -46,6 +47,7 @@ export default function RootLayout({
           strategy="lazyOnload"
         />
         <GlobalTurnstile />
+        <VisitTracker />
         {children}
       </body>
     </html>

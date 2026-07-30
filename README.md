@@ -135,6 +135,19 @@ This project includes Cloudflare Turnstile for bot protection on forms. To enabl
 
 **Note:** Turnstile is optional. If you don't set the environment variables, the forms will still work without bot protection.
 
+## Daily and weekly user analytics
+
+The app records one anonymous browser visit per Toronto calendar day and shows
+daily, rolling seven-day, and all-time totals at
+`http://localhost:3000/analytics`. The dashboard intentionally redirects on the
+deployed site.
+
+Before deploying this feature, run
+`supabase/migrations/20260730000000_add_daily_visit_tracking.sql` in the
+Supabase SQL editor (or apply it with the Supabase CLI). The tracker uses a
+random ID stored in the browser; it does not collect IP addresses or account
+information.
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
