@@ -7,6 +7,7 @@ declare global {
     turnstile: {
       render: (element: HTMLElement, options: {
         sitekey: string;
+        action?: string;
         callback?: (token: string) => void;
         'error-callback'?: () => void;
         'expired-callback'?: () => void;
@@ -21,6 +22,7 @@ declare global {
 
 interface TurnstileProps {
   siteKey: string;
+  action?: string;
   onVerify: (token: string) => void;
   onError?: () => void;
   onExpire?: () => void;
@@ -35,6 +37,7 @@ export interface TurnstileRef {
 
 const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
   siteKey,
+  action,
   onVerify,
   onError,
   onExpire,
@@ -56,8 +59,8 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
   useEffect(() => {
     // Check if script is already loaded (from Next.js Script component in layout)
     if (window.turnstile) {
-      setIsLoaded(true);
-      return;
+      const readyTimer = setTimeout(() => setIsLoaded(true), 0);
+      return () => clearTimeout(readyTimer);
     }
 
     // Check if script tag already exists (from Next.js Script component)
@@ -105,7 +108,7 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
         if (widgetIdRef.current && window.turnstile) {
           try {
             window.turnstile.remove(widgetIdRef.current);
-          } catch (e) {
+          } catch {
             // Ignore cleanup errors
           }
         }
@@ -134,7 +137,7 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
       if (widgetIdRef.current && window.turnstile) {
         try {
           window.turnstile.remove(widgetIdRef.current);
-        } catch (e) {
+        } catch {
           // Ignore cleanup errors
         }
       }
@@ -143,7 +146,6 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
 
   useEffect(() => {
     if (!siteKey) {
-      setError('Turnstile site key is not configured');
       console.warn('Turnstile: Site key is missing. Check NEXT_PUBLIC_TURNSTILE_SITE_KEY in .env.local');
       return;
     }
@@ -163,6 +165,7 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
         console.log('Turnstile: Rendering widget with site key:', siteKey.substring(0, 10) + '...');
         const widgetId = window.turnstile.render(containerRef.current, {
           sitekey: siteKey,
+          action,
           callback: (token: string) => {
             console.log('Turnstile: Verification successful');
             setError(null); // Clear any previous errors
@@ -194,7 +197,7 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [isLoaded, siteKey, onVerify, onError, onExpire, theme, size]);
+  }, [isLoaded, siteKey, action, onVerify, onError, onExpire, theme, size]);
 
   const reset = useCallback(() => {
     if (widgetIdRef.current && window.turnstile) {
@@ -213,11 +216,13 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
   }), [reset]);
 
   // Show error only for critical errors (not verification failures)
-  if (error && (error.includes('not configured') || error.includes('Failed to render') || error.includes('Network restriction'))) {
+  const displayError = siteKey ? error : 'Turnstile site key is not configured';
+
+  if (displayError && (displayError.includes('not configured') || displayError.includes('Failed to render') || displayError.includes('Network restriction'))) {
     return (
       <div className={`text-red-600 text-sm ${className}`}>
-        <p className="mb-2">{error}</p>
-        {error.includes('Network restriction') && (
+        <p className="mb-2">{displayError}</p>
+        {displayError.includes('Network restriction') && (
           <p className="text-xs text-gray-600 mb-2">
             This often happens on corporate WiFi networks. Try switching to cellular data or a personal network.
           </p>
@@ -252,4 +257,3 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
 Turnstile.displayName = 'Turnstile';
 
 export default Turnstile;
-

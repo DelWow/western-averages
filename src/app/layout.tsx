@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import GlobalTurnstile from './components/GlobalTurnstile';
 import VisitTracker from './components/VisitTracker';
 
 const sourceSans = Source_Sans_3({
@@ -46,7 +45,6 @@ export default function RootLayout({
           src="https://challenges.cloudflare.com/turnstile/v0/api.js"
           strategy="lazyOnload"
         />
-        <GlobalTurnstile />
         <VisitTracker />
         {children}
       </body>

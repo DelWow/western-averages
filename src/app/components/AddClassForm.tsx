@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { getTurnstileToken, clearTurnstileToken } from './GlobalTurnstile';
+import { useState } from 'react';
 
 interface AddClassFormProps {
   onSubmit: (data: { className: string; classCode: string; average: number }) => void;
@@ -13,18 +12,7 @@ export default function AddClassForm({ onSubmit, onCancel, initialData }: AddCla
   const [className, setClassName] = useState(initialData?.className || '');
   const [classCode, setClassCode] = useState(initialData?.classCode || '');
   const [average, setAverage] = useState(initialData?.average.toString() || '');
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
-  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
-
-  // Get token from sessionStorage on mount
-  useEffect(() => {
-    const token = getTurnstileToken();
-    if (token) {
-      setTurnstileToken(token);
-    }
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,43 +24,6 @@ export default function AddClassForm({ onSubmit, onCancel, initialData }: AddCla
     if (!className || !classCode || isNaN(avg) || avg < 0 || avg > 100) {
       setError('Please fill in all fields correctly');
       return;
-    }
-
-    // Verify Turnstile token if site key is configured
-    if (turnstileSiteKey) {
-      // Get fresh token from sessionStorage
-      const currentToken = getTurnstileToken();
-      if (!currentToken) {
-        setError('Please complete the verification challenge that appears when you first visit the site');
-        return;
-      }
-      // Use the token from sessionStorage
-      setTurnstileToken(currentToken);
-
-      // Verify token with our API
-      try {
-        const verifyResponse = await fetch('/api/turnstile/verify', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ token: currentToken }),
-        });
-
-        const verifyResult = await verifyResponse.json();
-
-        if (!verifyResult.success) {
-          // Token invalid, clear it so user can verify again
-          clearTurnstileToken();
-          setTurnstileToken(null);
-          setError('Verification expired. Please refresh the page to verify again.');
-          return;
-        }
-      } catch (verifyError) {
-        console.error('Turnstile verification error:', verifyError);
-        setError('Verification error. Please try again.');
-        return;
-      }
     }
 
     // Submit the form
@@ -145,22 +96,10 @@ export default function AddClassForm({ onSubmit, onCancel, initialData }: AddCla
           </div>
         )}
 
-        {/* Show message if verification needed */}
-        {turnstileSiteKey && !turnstileToken && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-            <p className="text-xs text-amber-800 text-center">
-              <span className="font-semibold">Note:</span> Please complete the verification challenge that appears when you first visit the site to submit forms.
-            </p>
-          </div>
-        )}
-
         <div className="flex gap-3 pt-3">
           <button
             type="submit"
-            disabled={!!turnstileSiteKey && !turnstileToken}
-            className={`flex-1 btn-primary text-white px-6 py-3 rounded-xl hover:shadow-md transition-all font-semibold ${
-              !!turnstileSiteKey && !turnstileToken ? 'opacity-60 cursor-not-allowed' : ''
-            }`}
+            className="flex-1 btn-primary text-white px-6 py-3 rounded-xl hover:shadow-md transition-all font-semibold"
           >
             {initialData ? 'Update Class' : 'Add Class'}
           </button>
@@ -176,4 +115,3 @@ export default function AddClassForm({ onSubmit, onCancel, initialData }: AddCla
     </div>
   );
 }
-

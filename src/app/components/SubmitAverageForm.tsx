@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase';
-import { getTurnstileToken, clearTurnstileToken } from './GlobalTurnstile';
+import { useCallback, useRef, useState } from 'react';
+import Turnstile, { TurnstileRef } from './Turnstile';
 
 interface SubmitAverageFormProps {
   courseId: number;
@@ -17,14 +16,22 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileRef>(null);
   
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
 
-  useEffect(() => {
-    const token = getTurnstileToken();
-    if (token) {
-      setTurnstileToken(token);
-    }
+  const resetTurnstile = useCallback(() => {
+    setTurnstileToken(null);
+    turnstileRef.current?.resetTurnstile();
+  }, []);
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token);
+    setError(null);
+  }, []);
+
+  const handleTurnstileExpire = useCallback(() => {
+    setTurnstileToken(null);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,62 +57,31 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
       return;
     }
 
-    if (turnstileSiteKey) {
-      const currentToken = getTurnstileToken();
-      if (!currentToken) {
-        setError('Please complete the verification challenge that appears when you first visit the site');
-        return;
-      }
-      setTurnstileToken(currentToken);
-
-      try {
-        const verifyResponse = await fetch('/api/turnstile/verify', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ token: currentToken }),
-        });
-
-        const verifyResult = await verifyResponse.json();
-
-        if (!verifyResult.success) {
-          clearTurnstileToken();
-          setTurnstileToken(null);
-          setError('Verification expired. Please refresh the page to verify again.');
-          return;
-        }
-      } catch (verifyError) {
-        console.error('Turnstile verification error:', verifyError);
-        setError('Verification error. Please try again.');
-        return;
-      }
+    if (turnstileSiteKey && !turnstileToken) {
+      setError('Please complete the verification challenge');
+      return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const supabase = createClient();
-      
-      const response = await fetch('https://api.ipify.org?format=json').catch(() => null);
-      const ipData = response ? await response.json().catch(() => null) : null;
-      const ipAddress = ipData?.ip || null;
-
-      const { error: insertError } = await supabase
-        .from('student_averages')
-        .insert({
-          course_id: courseId,
-          grade: avg,
-          term: term,
+      const response = await fetch('/api/averages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courseId,
+          average: avg,
+          term,
           year: yearNum,
-          user_ip: ipAddress,
-          user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
-        });
+          turnstileToken,
+        }),
+      });
 
-      if (insertError) {
-        console.error('Error submitting average:', insertError);
-        setError(insertError.message || 'Failed to submit average. Please try again.');
-        setIsSubmitting(false);
+      const result = await response.json().catch(() => null);
+      resetTurnstile();
+
+      if (!response.ok || !result?.success) {
+        setError(result?.error || 'Failed to submit average. Please try again.');
         return;
       }
 
@@ -124,6 +100,7 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
       }
     } catch (err) {
       console.error('Error submitting average:', err);
+      resetTurnstile();
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -264,12 +241,16 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
           </div>
         </div>
 
-        {turnstileSiteKey && !turnstileToken && (
-          <div className="bg-amber-50 border border-amber-200 p-3">
-            <p className="text-xs text-amber-800 text-center">
-              <strong>Note:</strong> Please complete the verification challenge that appears when you first visit the site to submit forms.
-            </p>
-          </div>
+        {turnstileSiteKey && (
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={turnstileSiteKey}
+            action="turnstile-spin-v2"
+            onVerify={handleTurnstileVerify}
+            onError={resetTurnstile}
+            onExpire={handleTurnstileExpire}
+            className="mx-auto"
+          />
         )}
 
         <button
