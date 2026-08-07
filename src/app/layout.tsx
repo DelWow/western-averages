@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import MicrosoftClarity from "./components/MicrosoftClarity";
 import VisitTracker from './components/VisitTracker';
 
 const sourceSans = Source_Sans_3({
@@ -15,6 +17,18 @@ const sourceSerif = Source_Serif_4({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
+
+const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+const clarityProjectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
+const isProduction = process.env.NODE_ENV === "production";
+const validGaMeasurementId =
+  isProduction && gaMeasurementId && /^G-[A-Z0-9]+$/.test(gaMeasurementId)
+    ? gaMeasurementId
+    : null;
+const validClarityProjectId =
+  isProduction && clarityProjectId && /^[a-z0-9]+$/.test(clarityProjectId)
+    ? clarityProjectId
+    : null;
 
 export const metadata: Metadata = {
   title: "Western University Course Averages",
@@ -47,6 +61,12 @@ export default function RootLayout({
         />
         <VisitTracker />
         {children}
+        {validGaMeasurementId && (
+          <GoogleAnalytics gaId={validGaMeasurementId} />
+        )}
+        {validClarityProjectId && (
+          <MicrosoftClarity projectId={validClarityProjectId} />
+        )}
       </body>
     </html>
   );

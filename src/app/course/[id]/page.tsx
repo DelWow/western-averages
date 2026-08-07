@@ -7,6 +7,7 @@ import Header from '../../components/Header';
 import SubmitAverageForm from '../../components/SubmitAverageForm';
 import UnverifiedAveragesSection from '../../components/UnverifiedAveragesSection';
 import { createClient } from '@/lib/supabase';
+import { trackEvent } from '@/lib/analytics';
 
 interface Course {
   id: number;
@@ -65,6 +66,12 @@ export default function CourseDetailPage() {
 
     fetchCourse();
   }, [courseId]);
+
+  useEffect(() => {
+    if (course) {
+      trackEvent('course_view', { course_level: course.level });
+    }
+  }, [course]);
 
   const getLevelClass = (level: number) => {
     if (level >= 4) return 'level-4';

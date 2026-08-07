@@ -7,6 +7,7 @@ import CourseListItem from './components/CourseListItem';
 import StatsCard from './components/StatsCard';
 import { createClient } from '@/lib/supabase';
 import { compareSqctGrades } from '@/lib/sqct';
+import { trackEvent } from '@/lib/analytics';
 
 interface Course {
   id: number;
@@ -203,8 +204,27 @@ export default function Home() {
   ).length;
 
   const goToPage = (page: number) => {
+    if (page === currentPage) return;
+
+    trackEvent('pagination', { page_number: page });
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const changeViewMode = (mode: 'cards' | 'list') => {
+    if (mode === viewMode) return;
+
+    trackEvent('view_mode_change', { view_mode: mode });
+    setViewMode(mode);
+  };
+
+  const changeSortOption = (option: SortOption) => {
+    if (option !== sortOption) {
+      trackEvent('sort_courses', { sort_method: option });
+      setSortOption(option);
+    }
+
+    setShowSortMenu(false);
   };
 
   const goToPreviousPage = () => {
@@ -297,7 +317,7 @@ export default function Home() {
           {/* View Toggle */}
           <div className="flex items-center border border-gray-200 bg-white">
             <button
-              onClick={() => setViewMode('cards')}
+              onClick={() => changeViewMode('cards')}
               className={`px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
                 viewMode === 'cards'
                   ? 'bg-[#4F2683] text-white'
@@ -310,7 +330,7 @@ export default function Home() {
               Cards
             </button>
             <button
-              onClick={() => setViewMode('list')}
+              onClick={() => changeViewMode('list')}
               className={`px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
                 viewMode === 'list'
                   ? 'bg-[#4F2683] text-white'
@@ -343,10 +363,7 @@ export default function Home() {
                 {sortOptions.map((option) => (
                   <button
                     key={option.value}
-                    onClick={() => {
-                      setSortOption(option.value);
-                      setShowSortMenu(false);
-                    }}
+                    onClick={() => changeSortOption(option.value)}
                     className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors ${
                       sortOption === option.value ? 'bg-[#4F2683]/10 text-[#4F2683] font-medium' : 'text-gray-700'
                     }`}

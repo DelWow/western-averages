@@ -7,6 +7,7 @@ import ClassCard from '../components/ClassCard';
 import CourseListItem from '../components/CourseListItem';
 import { createClient } from '@/lib/supabase';
 import { compareSqctGrades } from '@/lib/sqct';
+import { trackEvent } from '@/lib/analytics';
 
 interface Course {
   id: number;
@@ -295,8 +296,10 @@ function SubjectPageContent() {
 
   const handleSubjectClick = (subjectName: string) => {
     if (selectedSubject === subjectName) {
+      trackEvent('filter_courses', { filter_type: 'subject', filter_action: 'clear' });
       setSelectedSubject('');
     } else {
+      trackEvent('filter_courses', { filter_type: 'subject', filter_action: 'apply' });
       setSelectedSubject(subjectName);
     }
     setTimeout(() => {
@@ -305,6 +308,37 @@ function SubjectPageContent() {
         coursesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 100);
+  };
+
+  const clearSubjectFilter = () => {
+    if (selectedSubject) {
+      trackEvent('filter_courses', { filter_type: 'subject', filter_action: 'clear' });
+      setSelectedSubject('');
+    }
+  };
+
+  const changeViewMode = (mode: 'cards' | 'list') => {
+    if (mode === viewMode) return;
+
+    trackEvent('view_mode_change', { view_mode: mode });
+    setViewMode(mode);
+  };
+
+  const changeSortOption = (option: SortOption) => {
+    if (option !== sortOption) {
+      trackEvent('sort_courses', { sort_method: option });
+      setSortOption(option);
+    }
+
+    setShowSortMenu(false);
+  };
+
+  const changeSubjectSearch = (value: string) => {
+    if (!subjectSearch.trim() && value.trim()) {
+      trackEvent('course_search', { search_type: 'subject' });
+    }
+
+    setSubjectSearch(value);
   };
 
   return (
@@ -342,7 +376,7 @@ function SubjectPageContent() {
                 type="text"
                 placeholder="Search subjects..."
                 value={subjectSearch}
-                onChange={(e) => setSubjectSearch(e.target.value)}
+                onChange={(e) => changeSubjectSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4F2683] focus:border-transparent"
               />
               {subjectSearch && (
@@ -363,7 +397,7 @@ function SubjectPageContent() {
             <div className="mb-4 flex items-center gap-2">
               <span className="text-sm text-gray-600">Selected:</span>
               <button
-                onClick={() => setSelectedSubject('')}
+                onClick={clearSubjectFilter}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#4F2683]/10 text-[#4F2683] text-sm font-medium hover:bg-[#4F2683]/20 transition-colors"
               >
                 {selectedSubject}
@@ -434,7 +468,7 @@ function SubjectPageContent() {
                 {/* View Toggle */}
                 <div className="flex items-center border border-gray-200 bg-white">
                   <button
-                    onClick={() => setViewMode('cards')}
+                    onClick={() => changeViewMode('cards')}
                     className={`px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
                       viewMode === 'cards'
                         ? 'bg-[#4F2683] text-white'
@@ -447,7 +481,7 @@ function SubjectPageContent() {
                     <span className="hidden sm:inline">Cards</span>
                   </button>
                   <button
-                    onClick={() => setViewMode('list')}
+                    onClick={() => changeViewMode('list')}
                     className={`px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
                       viewMode === 'list'
                         ? 'bg-[#4F2683] text-white'
@@ -480,10 +514,7 @@ function SubjectPageContent() {
                       {sortOptions.map((option) => (
                         <button
                           key={option.value}
-                          onClick={() => {
-                            setSortOption(option.value);
-                            setShowSortMenu(false);
-                          }}
+                          onClick={() => changeSortOption(option.value)}
                           className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors ${
                             sortOption === option.value ? 'bg-[#4F2683]/10 text-[#4F2683] font-medium' : 'text-gray-700'
                           }`}
