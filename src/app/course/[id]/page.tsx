@@ -149,7 +149,7 @@ export default function CourseDetailPage() {
     <div className="min-h-screen bg-white">
       <Header />
       
-      <main className="container mx-auto px-4 sm:px-6 py-8">
+      <main className="container mx-auto px-4 py-6 sm:px-6 sm:py-8">
         {/* Breadcrumb */}
         <Link
           href="/"
@@ -164,19 +164,19 @@ export default function CourseDetailPage() {
         {/* Course Header */}
         <div className="bg-white border border-gray-200 mb-6">
           <div className="h-1 bg-[#4F2683]" />
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-sm font-mono text-gray-500">{course.code}</span>
+              <div className="min-w-0">
+                <div className="flex min-w-0 items-center gap-3 mb-2">
+                  <span className="min-w-0 overflow-wrap-anywhere text-sm font-mono text-gray-500">{course.code}</span>
                   <span className={`text-xs font-medium px-2 py-0.5 ${getLevelClass(course.level)}`}>
                     {course.level}000 Level
                   </span>
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-display font-semibold text-gray-900 mb-2">
+                <h1 className="overflow-wrap-anywhere text-2xl sm:text-3xl font-display font-semibold text-gray-900 mb-2">
                   {course.name}
                 </h1>
-                <p className="text-gray-600">{course.department}</p>
+                <p className="overflow-wrap-anywhere text-gray-600">{course.department}</p>
               </div>
             </div>
 
@@ -212,18 +212,18 @@ export default function CourseDetailPage() {
 
         {/* Course Details */}
         <div className="bg-white border border-gray-200 mb-6">
-          <div className="bg-gray-50 border-b border-gray-200 px-6 py-3">
+          <div className="bg-gray-50 border-b border-gray-200 px-4 sm:px-6 py-3">
             <h2 className="font-display font-semibold text-gray-900">Course Details</h2>
           </div>
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <dt className="text-xs uppercase tracking-wider text-gray-500 mb-1">Course Code</dt>
-                <dd className="font-mono text-gray-900">{course.code}</dd>
+                <dd className="overflow-wrap-anywhere font-mono text-gray-900">{course.code}</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wider text-gray-500 mb-1">Department</dt>
-                <dd className="text-gray-900">{course.department}</dd>
+                <dd className="overflow-wrap-anywhere text-gray-900">{course.department}</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wider text-gray-500 mb-1">Course Level</dt>
@@ -263,11 +263,11 @@ export default function CourseDetailPage() {
 
         {/* Student Averages Section */}
         <div className="bg-white border border-gray-200">
-          <div className="bg-gray-50 border-b border-gray-200 px-6 py-3">
+          <div className="bg-gray-50 border-b border-gray-200 px-4 sm:px-6 py-3">
             <h2 className="font-display font-semibold text-gray-900">Student-Submitted Averages</h2>
             <p className="text-sm text-gray-600 mt-1">View and contribute to community-submitted course averages</p>
           </div>
-          <div className="p-6 space-y-6">
+          <div className="p-3 sm:p-6 space-y-6">
             <SubmitAverageForm 
               courseId={course.id} 
               onSuccess={() => setRefreshTrigger(prev => prev + 1)}

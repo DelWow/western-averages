@@ -64,7 +64,7 @@ export default function ClassCard({
   return (
     <Link 
       href={`/course/${id}`} 
-      className="block bg-white border border-gray-200 hover:border-[#4F2683] hover:shadow-md transition-all"
+      className="block min-w-0 bg-white border border-gray-200 hover:border-[#4F2683] hover:shadow-md transition-all"
     >
       {/* Purple accent bar */}
       <div className="h-1 bg-[#4F2683]" />
@@ -72,19 +72,19 @@ export default function ClassCard({
       <div className="p-4">
         {/* Course code and level */}
         <div className="flex items-start justify-between gap-2 mb-2">
-          <span className="text-xs font-mono text-gray-500 tracking-wide">{code}</span>
+          <span className="min-w-0 overflow-wrap-anywhere text-xs font-mono text-gray-500 tracking-wide">{code}</span>
           <span className={`text-xs font-medium px-2 py-0.5 ${getLevelClass(level)}`}>
             {level}000
           </span>
         </div>
         
         {/* Course name */}
-        <h3 className="font-display text-base font-semibold text-gray-900 mb-3 leading-snug line-clamp-2">
+        <h3 className="overflow-wrap-anywhere font-display text-base font-semibold text-gray-900 mb-3 leading-snug line-clamp-2">
           {name}
         </h3>
         
         {/* Department */}
-        <p className="text-xs text-gray-500 mb-4">{department}</p>
+        <p className="overflow-wrap-anywhere text-xs text-gray-500 mb-4">{department}</p>
 
         {/* SQCT Grade */}
         <div className="flex items-center justify-between gap-3 py-2.5 px-3 mb-3 bg-gray-50 border border-gray-100">
@@ -102,7 +102,7 @@ export default function ClassCard({
                 </svg>
                 <span
                   role="tooltip"
-                  className="pointer-events-none absolute left-1/2 bottom-full z-20 mb-2 w-64 -translate-x-1/2 bg-gray-900 px-3 py-2 text-[11px] normal-case leading-relaxed tracking-normal text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus:opacity-100"
+                  className="pointer-events-none fixed inset-x-4 bottom-4 z-20 w-auto bg-gray-900 px-3 py-2 text-[11px] normal-case leading-relaxed tracking-normal text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus:opacity-100 sm:absolute sm:inset-x-auto sm:left-1/2 sm:bottom-full sm:mb-2 sm:w-64 sm:-translate-x-1/2"
                 >
                   SQCT stands for Student Questionnaires on Courses and Teaching. This grade is based on 2025 student feedback.
                 </span>

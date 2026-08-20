@@ -67,13 +67,13 @@ export default function CourseListItem({
         {/* Course Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-1">
-            <span className="text-xs font-mono text-gray-400">{code}</span>
+            <span className="min-w-0 overflow-wrap-anywhere text-xs font-mono text-gray-400">{code}</span>
             <span className={`text-xs font-medium px-1.5 py-0.5 ${getLevelClass(level)}`}>
               {level}000
             </span>
           </div>
-          <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">{name}</h3>
-          <p className="text-xs text-gray-500 mt-0.5">{department}</p>
+          <h3 className="overflow-wrap-anywhere font-medium text-gray-900 text-sm sm:text-base sm:truncate">{name}</h3>
+          <p className="overflow-wrap-anywhere text-xs text-gray-500 mt-0.5">{department}</p>
         </div>
 
         {/* Grade Info */}

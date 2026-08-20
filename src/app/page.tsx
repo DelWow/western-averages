@@ -243,9 +243,9 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       <Header />
       
-      <main className="container mx-auto px-4 sm:px-6 py-8">
+      <main className="container mx-auto px-4 py-6 sm:px-6 sm:py-8">
         {/* Notice Banner */}
-        <div className="mb-6 bg-amber-50 border-l-4 border-amber-400 p-4">
+        <div className="mb-6 bg-amber-50 border-l-4 border-amber-400 p-3 sm:p-4">
           <div className="flex gap-3">
             <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -273,13 +273,13 @@ export default function Home() {
         </div>
 
         {/* Page Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <h1 className="text-3xl sm:text-4xl font-display font-semibold text-gray-900 mb-2">Course Averages</h1>
           <p className="text-gray-600">Browse grade distributions across Western University courses</p>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <StatsCard
             title="Total Courses"
             value={courses.length.toLocaleString()}
@@ -313,12 +313,12 @@ export default function Home() {
         </div>
 
         {/* Controls */}
-        <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+        <div className="flex items-center justify-between gap-3 sm:gap-4 mb-6 flex-wrap">
           {/* View Toggle */}
           <div className="flex items-center border border-gray-200 bg-white">
             <button
               onClick={() => changeViewMode('cards')}
-              className={`px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
+              className={`min-h-11 px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
                 viewMode === 'cards'
                   ? 'bg-[#4F2683] text-white'
                   : 'text-gray-600 hover:bg-gray-50'
@@ -331,7 +331,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => changeViewMode('list')}
-              className={`px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
+              className={`min-h-11 px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
                 viewMode === 'list'
                   ? 'bg-[#4F2683] text-white'
                   : 'text-gray-600 hover:bg-gray-50'
@@ -345,21 +345,21 @@ export default function Home() {
           </div>
 
           {/* Sort Dropdown */}
-          <div className="relative sort-menu-container">
+          <div className="relative min-w-0 sort-menu-container">
             <button
               onClick={() => setShowSortMenu(!showSortMenu)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#4F2683] text-white text-sm font-medium hover:bg-[#3D1E66] transition-colors"
+              className="flex min-h-11 max-w-full items-center gap-2 px-3 sm:px-4 py-2 bg-[#4F2683] text-white text-sm font-medium hover:bg-[#3D1E66] transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
               </svg>
-              Sort: {sortOptions.find(opt => opt.value === sortOption)?.label}
+              <span className="truncate">Sort: {sortOptions.find(opt => opt.value === sortOption)?.label}</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
             {showSortMenu && (
-              <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 shadow-lg z-20">
+              <div className="absolute right-0 mt-1 w-56 max-w-[calc(100vw-2rem)] bg-white border border-gray-200 shadow-lg z-20">
                 {sortOptions.map((option) => (
                   <button
                     key={option.value}
@@ -440,16 +440,16 @@ export default function Home() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="bg-white border border-gray-200 p-4">
+              <div className="bg-white border border-gray-200 p-3 sm:p-4">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <p className="text-sm text-gray-600">
                     Showing <span className="font-medium">{startIndex + 1}</span> to <span className="font-medium">{Math.min(endIndex, sortedCourses.length)}</span> of <span className="font-medium">{sortedCourses.length.toLocaleString()}</span> courses
                   </p>
-                  <div className="flex items-center gap-1">
+                  <div className="flex w-full max-w-full items-center justify-center gap-1 sm:w-auto sm:justify-start">
                     <button
                       onClick={goToPreviousPage}
                       disabled={currentPage === 1}
-                      className={`px-3 py-1.5 text-sm transition-colors ${
+                      className={`min-h-10 px-2 sm:px-3 py-1.5 text-sm transition-colors ${
                         currentPage === 1
                           ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                           : 'bg-[#4F2683] text-white hover:bg-[#3D1E66]'
@@ -458,7 +458,7 @@ export default function Home() {
                       Previous
                     </button>
 
-                    <div className="flex items-center gap-1 mx-2">
+                    <div className="flex min-w-0 items-center gap-1 mx-1 sm:mx-2 overflow-x-auto">
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
                         const showPage =
                           page === 1 ||
@@ -485,7 +485,7 @@ export default function Home() {
                           <button
                             key={page}
                             onClick={() => goToPage(page)}
-                            className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                            className={`min-h-10 min-w-9 px-2 sm:px-3 py-1.5 text-sm font-medium transition-colors ${
                               currentPage === page
                                 ? 'bg-[#4F2683] text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -500,7 +500,7 @@ export default function Home() {
                     <button
                       onClick={goToNextPage}
                       disabled={currentPage === totalPages}
-                      className={`px-3 py-1.5 text-sm transition-colors ${
+                      className={`min-h-10 px-2 sm:px-3 py-1.5 text-sm transition-colors ${
                         currentPage === totalPages
                           ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                           : 'bg-[#4F2683] text-white hover:bg-[#3D1E66]'

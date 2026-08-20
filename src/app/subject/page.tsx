@@ -345,9 +345,9 @@ function SubjectPageContent() {
     <div className="min-h-screen bg-white">
       <Header />
       
-      <main className="container mx-auto px-4 sm:px-6 py-8">
+      <main className="container mx-auto px-4 py-6 sm:px-6 sm:py-8">
         {/* Notice Banner */}
-        <div className="mb-6 bg-amber-50 border-l-4 border-amber-400 p-4">
+        <div className="mb-6 bg-amber-50 border-l-4 border-amber-400 p-3 sm:p-4">
           <div className="flex gap-3">
             <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -359,7 +359,7 @@ function SubjectPageContent() {
         </div>
 
         {/* Page Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <h1 className="text-3xl sm:text-4xl font-display font-semibold text-gray-900 mb-2">Browse by Subject</h1>
           <p className="text-gray-600">Select a subject to explore its courses</p>
         </div>
@@ -394,14 +394,14 @@ function SubjectPageContent() {
 
           {/* Selected Subject Badge */}
           {selectedSubject && (
-            <div className="mb-4 flex items-center gap-2">
+            <div className="mb-4 flex min-w-0 items-center gap-2">
               <span className="text-sm text-gray-600">Selected:</span>
               <button
                 onClick={clearSubjectFilter}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#4F2683]/10 text-[#4F2683] text-sm font-medium hover:bg-[#4F2683]/20 transition-colors"
+                className="inline-flex min-w-0 max-w-full items-center gap-1.5 px-3 py-1.5 bg-[#4F2683]/10 text-[#4F2683] text-sm font-medium hover:bg-[#4F2683]/20 transition-colors"
               >
-                {selectedSubject}
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span className="truncate">{selectedSubject}</span>
+                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -425,14 +425,14 @@ function SubjectPageContent() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+            <div className="grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
               {filteredSubjects.map((subject) => {
                 const isSelected = selectedSubject === subject.name;
                 return (
                   <button
                     key={subject.name}
                     onClick={() => handleSubjectClick(subject.name)}
-                    className={`p-3 text-left transition-all border ${
+                    className={`min-w-0 min-h-11 p-3 text-left transition-all border ${
                       isSelected
                         ? 'bg-[#4F2683] text-white border-[#4F2683]'
                         : 'bg-white text-gray-900 border-gray-200 hover:border-[#4F2683]'
@@ -454,9 +454,9 @@ function SubjectPageContent() {
         {/* Courses Section */}
         {selectedSubject && (
           <div id="courses-section" className="mb-8">
-            <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-display font-semibold text-gray-900">
+            <div className="flex items-center justify-between gap-3 sm:gap-4 mb-6 flex-wrap">
+              <div className="min-w-0 flex-1">
+                <h2 className="overflow-wrap-anywhere text-xl sm:text-2xl font-display font-semibold text-gray-900">
                   {selectedSubject}
                 </h2>
                 <p className="text-sm text-gray-600">
@@ -464,12 +464,12 @@ function SubjectPageContent() {
                 </p>
               </div>
               
-              <div className="flex items-center gap-2">
+              <div className="flex max-w-full items-center gap-2">
                 {/* View Toggle */}
                 <div className="flex items-center border border-gray-200 bg-white">
                   <button
                     onClick={() => changeViewMode('cards')}
-                    className={`px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
+                    className={`min-h-11 px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
                       viewMode === 'cards'
                         ? 'bg-[#4F2683] text-white'
                         : 'text-gray-600 hover:bg-gray-50'
@@ -482,7 +482,7 @@ function SubjectPageContent() {
                   </button>
                   <button
                     onClick={() => changeViewMode('list')}
-                    className={`px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
+                    className={`min-h-11 px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
                       viewMode === 'list'
                         ? 'bg-[#4F2683] text-white'
                         : 'text-gray-600 hover:bg-gray-50'
@@ -499,7 +499,7 @@ function SubjectPageContent() {
                 <div className="relative sort-menu-container">
                   <button
                     onClick={() => setShowSortMenu(!showSortMenu)}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#4F2683] text-white text-sm font-medium hover:bg-[#3D1E66] transition-colors"
+                    className="flex min-h-11 items-center gap-2 px-3 sm:px-4 py-2 bg-[#4F2683] text-white text-sm font-medium hover:bg-[#3D1E66] transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
@@ -510,7 +510,7 @@ function SubjectPageContent() {
                     </svg>
                   </button>
                   {showSortMenu && (
-                    <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 shadow-lg z-20">
+                    <div className="absolute right-0 mt-1 w-56 max-w-[calc(100vw-2rem)] bg-white border border-gray-200 shadow-lg z-20">
                       {sortOptions.map((option) => (
                         <button
                           key={option.value}

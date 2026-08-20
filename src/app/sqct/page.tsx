@@ -12,9 +12,9 @@ export default function SqctPage() {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <main className="container mx-auto px-4 py-6 sm:px-6 sm:py-12">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <h1 className="text-3xl sm:text-4xl font-display font-semibold text-gray-900 mb-4">
               What is an SQCT grade?
             </h1>
@@ -24,7 +24,7 @@ export default function SqctPage() {
             </p>
           </div>
 
-          <div className="bg-[#4F2683] text-white p-6 sm:p-8 mb-8">
+          <div className="bg-[#4F2683] text-white p-4 min-[360px]:p-5 sm:p-8 mb-6 sm:mb-8">
             <p className="text-xs uppercase tracking-widest text-white/70 mb-2">Data year</p>
             <p className="text-2xl sm:text-3xl font-display font-semibold mb-2">The grades shown here are from 2025.</p>
             <p className="text-white/80">
@@ -33,14 +33,14 @@ export default function SqctPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <section className="border border-gray-200 p-6">
+            <section className="border border-gray-200 p-4 sm:p-6">
               <h2 className="text-xl font-display font-semibold text-gray-900 mb-3">What the grade tells you</h2>
               <p className="text-gray-600 leading-relaxed">
                 On Western Averages, the SQCT grade is a quick summary of the 2025 feedback in our dataset. It gives you another point of reference when you are comparing courses.
               </p>
             </section>
 
-            <section className="border border-gray-200 p-6">
+            <section className="border border-gray-200 p-4 sm:p-6">
               <h2 className="text-xl font-display font-semibold text-gray-900 mb-3">What it does not tell you</h2>
               <p className="text-gray-600 leading-relaxed">
                 It is not the class average, and it is not a promise that you will have the same experience. The instructor, course format, workload and group of students can all change from one year to the next.
@@ -49,10 +49,10 @@ export default function SqctPage() {
           </div>
 
           <section className="border border-gray-200 mb-8">
-            <div className="bg-gray-50 border-b border-gray-200 px-6 py-4">
+            <div className="bg-gray-50 border-b border-gray-200 px-4 sm:px-6 py-4">
               <h2 className="text-xl font-display font-semibold text-gray-900">How to use it</h2>
             </div>
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <ul className="space-y-4 text-gray-600">
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-[#4F2683]/10 text-[#4F2683] font-semibold text-sm flex items-center justify-center">1</span>

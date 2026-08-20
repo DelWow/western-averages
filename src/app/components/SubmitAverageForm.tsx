@@ -119,7 +119,7 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
         <p className="text-sm text-gray-600 mt-1">Help other students by sharing your course average</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="p-3 min-[360px]:p-4 sm:p-6 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Term Selection */}
           <div>
