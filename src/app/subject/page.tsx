@@ -93,54 +93,25 @@ function SubjectPageContent() {
 
         const courseIdsSet = new Set(uniqueCourses.map(c => c.id));
         const unverifiedAveragesMap = new Map<number, number>();
-        
-        let allSubmissions: { course_id: number; grade: number }[] = [];
-        let submissionsFrom = 0;
-        const submissionsPageSize = 1000;
-        
-        while (true) {
-          const { data: submissionsData, error: submissionsError } = await supabase
-            .from('student_averages')
-            .select('course_id, grade')
-            .range(submissionsFrom, submissionsFrom + submissionsPageSize - 1);
 
-          if (submissionsError) {
-            console.error('Error fetching student averages:', submissionsError);
-            break;
-          }
+        const { data: averagesData, error: averagesError } = await supabase
+          .rpc('get_public_course_averages');
 
-          if (submissionsData && submissionsData.length > 0) {
-            const filteredSubmissions = submissionsData.filter(s => courseIdsSet.has(s.course_id));
-            allSubmissions = [...allSubmissions, ...filteredSubmissions];
-            submissionsFrom += submissionsPageSize;
-            
-            if (submissionsData.length < submissionsPageSize) {
-              break;
+        if (averagesError) {
+          console.error('Error fetching student-average summaries:', averagesError.code);
+        } else {
+          for (const row of averagesData ?? []) {
+            const courseId = Number(row.course_id);
+            const average = Number(row.unverified_average);
+            if (
+              Number.isSafeInteger(courseId) &&
+              Number.isFinite(average) &&
+              courseIdsSet.has(courseId)
+            ) {
+              unverifiedAveragesMap.set(courseId, average);
             }
-          } else {
-            break;
           }
         }
-
-        const courseGradesMap = new Map<number, number[]>();
-        allSubmissions.forEach(submission => {
-          const courseId = submission.course_id;
-          const grade = typeof submission.grade === 'string' ? parseFloat(submission.grade) : submission.grade;
-          if (!isNaN(grade) && isFinite(grade)) {
-            if (!courseGradesMap.has(courseId)) {
-              courseGradesMap.set(courseId, []);
-            }
-            courseGradesMap.get(courseId)!.push(grade);
-          }
-        });
-
-        courseGradesMap.forEach((grades, courseId) => {
-          if (grades.length > 0) {
-            const sum = grades.reduce((a, b) => a + b, 0);
-            const average = sum / grades.length;
-            unverifiedAveragesMap.set(courseId, parseFloat(average.toFixed(2)));
-          }
-        });
 
         const coursesWithUnverified = uniqueCourses.map(course => ({
           ...course,

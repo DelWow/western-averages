@@ -31,8 +31,8 @@ export default function CourseDetailPage() {
 
   useEffect(() => {
     async function fetchCourse() {
-      if (!courseId) {
-        setError('Course ID is required');
+      if (!courseId || !/^[1-9]\d{0,9}$/.test(courseId)) {
+        setError('Course not found');
         setLoading(false);
         return;
       }

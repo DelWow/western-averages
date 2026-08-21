@@ -4,11 +4,10 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase';
 
 interface StudentAverage {
-  id: string;
   grade: number;
   term: 'fall' | 'winter' | 'summer' | null;
   year: number | null;
-  created_at: string;
+  submitted_on: string;
 }
 
 interface AverageStats {
@@ -18,7 +17,50 @@ interface AverageStats {
   unverified_min: number | null;
   unverified_max: number | null;
   unverified_median: number | null;
-  last_submission: string | null;
+}
+
+function toFiniteNumber(value: unknown): number | null {
+  if (
+    value === null ||
+    value === undefined ||
+    value === '' ||
+    typeof value === 'boolean'
+  ) {
+    return null;
+  }
+  const numberValue = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+function normalizeStats(value: Record<string, unknown>): AverageStats {
+  return {
+    verified_average: toFiniteNumber(value.verified_average),
+    unverified_count: toFiniteNumber(value.unverified_count) ?? 0,
+    unverified_average: toFiniteNumber(value.unverified_average),
+    unverified_min: toFiniteNumber(value.unverified_min),
+    unverified_max: toFiniteNumber(value.unverified_max),
+    unverified_median: toFiniteNumber(value.unverified_median),
+  };
+}
+
+function normalizeSubmission(value: Record<string, unknown>): StudentAverage | null {
+  const grade = toFiniteNumber(value.grade);
+  if (
+    grade === null ||
+    typeof value.submitted_on !== 'string'
+  ) {
+    return null;
+  }
+
+  return {
+    grade,
+    term:
+      value.term === 'fall' || value.term === 'winter' || value.term === 'summer'
+        ? value.term
+        : null,
+    year: toFiniteNumber(value.year),
+    submitted_on: value.submitted_on,
+  };
 }
 
 interface UnverifiedAveragesSectionProps {
@@ -46,58 +88,38 @@ export default function UnverifiedAveragesSection({
       try {
         const supabase = createClient();
 
-        const { data: statsData, error: statsError } = await supabase
-          .rpc('get_course_average_stats', { course_id_param: courseId })
-          .single();
+        const [statsResult, submissionsResult] = await Promise.all([
+          supabase
+            .rpc('get_public_course_average_stats', {
+              course_id_param: courseId,
+            })
+            .single(),
+          supabase.rpc('get_public_student_averages', {
+            course_id_param: courseId,
+            result_limit: showAll ? 50 : 10,
+          }),
+        ]);
 
-        if (statsError) {
-          if (statsError.code !== 'PGRST116') {
-            console.warn('Stats function not available, using fallback:', statsError.message);
-          }
-          const { data: submissions, error: submissionsError } = await supabase
-            .from('student_averages')
-            .select('id, grade, term, year, created_at')
-            .eq('course_id', courseId)
-            .order('created_at', { ascending: false });
-
-          if (submissionsError) {
-            console.error('Error fetching submissions:', submissionsError);
-            setError('Failed to load student averages');
-            setLoading(false);
-            return;
-          }
-
-          const grades = submissions?.map(s => parseFloat(s.grade)) || [];
-          const count = grades.length;
-          
-          const calculatedStats: AverageStats = {
-            verified_average: verifiedAverage,
-            unverified_count: count,
-            unverified_average: count > 0 ? parseFloat((grades.reduce((a, b) => a + b, 0) / count).toFixed(2)) : null,
-            unverified_min: count > 0 ? Math.min(...grades) : null,
-            unverified_max: count > 0 ? Math.max(...grades) : null,
-            unverified_median: count > 0 ? calculateMedian(grades) : null,
-            last_submission: submissions && submissions.length > 0 ? submissions[0].created_at : null,
-          };
-
-          setStats(calculatedStats);
-          setRecentSubmissions((submissions || []).slice(0, 10));
-        } else {
-          setStats(statsData as AverageStats);
-          
-          const { data: submissions, error: submissionsError } = await supabase
-            .from('student_averages')
-            .select('id, grade, term, year, created_at')
-            .eq('course_id', courseId)
-            .order('created_at', { ascending: false })
-            .limit(showAll ? 50 : 10);
-
-          if (submissionsError) {
-            console.error('Error fetching submissions:', submissionsError);
-          } else {
-            setRecentSubmissions(submissions || []);
-          }
+        if (statsResult.error || submissionsResult.error || !statsResult.data) {
+          console.error(
+            'Error fetching public student averages:',
+            statsResult.error?.code ?? submissionsResult.error?.code ?? 'missing data',
+          );
+          setError('Failed to load student averages');
+          return;
         }
+
+        setStats(normalizeStats(statsResult.data as Record<string, unknown>));
+        setRecentSubmissions(
+          (submissionsResult.data ?? [])
+            .map((submission: unknown) =>
+              normalizeSubmission(submission as Record<string, unknown>),
+            )
+            .filter(
+              (submission: StudentAverage | null): submission is StudentAverage =>
+                submission !== null,
+            ),
+        );
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load student averages');
@@ -109,14 +131,6 @@ export default function UnverifiedAveragesSection({
     fetchData();
   }, [courseId, refreshTrigger, showAll, verifiedAverage]);
 
-  const calculateMedian = (numbers: number[]): number => {
-    const sorted = [...numbers].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 === 0
-      ? (sorted[mid - 1] + sorted[mid]) / 2
-      : sorted[mid];
-  };
-
   const getGradeClass = (grade: number | null) => {
     if (grade === null) return 'grade-na';
     if (grade >= 80) return 'grade-a';
@@ -126,18 +140,45 @@ export default function UnverifiedAveragesSection({
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    const dateParts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
+    if (!dateParts) return '';
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
+    const now = new Date();
+    const torontoParts = Object.fromEntries(
+      new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Toronto',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      })
+        .formatToParts(now)
+        .map(({ type, value }) => [type, value]),
+    );
+    const submittedUtc = Date.UTC(
+      Number(dateParts[1]),
+      Number(dateParts[2]) - 1,
+      Number(dateParts[3]),
+    );
+    const todayUtc = Date.UTC(
+      Number(torontoParts.year),
+      Number(torontoParts.month) - 1,
+      Number(torontoParts.day),
+    );
+    const diffDays = Math.round((todayUtc - submittedUtc) / 86_400_000);
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays > 1 && diffDays < 7) return `${diffDays} days ago`;
+
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: 'UTC',
+      month: 'short',
+      day: 'numeric',
+      year:
+        Number(dateParts[1]) !== Number(torontoParts.year)
+          ? 'numeric'
+          : undefined,
+    }).format(new Date(submittedUtc));
   };
 
   const formatTerm = (term: string | null) => {
@@ -263,9 +304,9 @@ export default function UnverifiedAveragesSection({
 
           <div>
             {recentSubmissions.length > 0 ? (
-              recentSubmissions.map((submission) => (
+              recentSubmissions.map((submission, index) => (
                 <div
-                  key={submission.id}
+                  key={`${submission.grade}-${submission.term}-${submission.year}-${submission.submitted_on}-${index}`}
                   className="flex items-center justify-between px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -283,7 +324,7 @@ export default function UnverifiedAveragesSection({
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-400">{formatDate(submission.created_at)}</p>
+                      <p className="text-xs text-gray-400">{formatDate(submission.submitted_on)}</p>
                     </div>
                   </div>
                   <span className="text-[10px] text-gray-400 uppercase tracking-wider hidden sm:inline">Unverified</span>

@@ -7,13 +7,26 @@
 3. Add these variables:
 
 ```
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anonymous-key
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=your-site-key-here
 TURNSTILE_SECRET=your-secret-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-server-only-supabase-service-role-key
+TURNSTILE_ALLOWED_HOSTNAMES=westernaverages.xyz
+ALLOWED_ORIGINS=https://westernaverages.xyz
+ABUSE_PREVENTION_SECRET=generate-an-independent-random-value-of-32-or-more-characters
+ANALYTICS_SECRET=generate-a-different-random-value-of-32-or-more-characters
 ```
 
 **Important:** 
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` must start with `NEXT_PUBLIC_` to be accessible in client components
+- The public Supabase URL and anonymous key are browser configuration, not
+  substitutes for the server-only service-role key
 - `TURNSTILE_SECRET` should NOT have `NEXT_PUBLIC_` prefix (server-only)
+- `SUPABASE_SERVICE_ROLE_KEY` is server-only and must never use a
+  `NEXT_PUBLIC_` prefix
+- Keep both abuse-prevention secrets server-only and use different random values
+- Use exact origins and hostnames; wildcards and suffix matching are not supported
 
 ## Cloudflare Turnstile Hostname Configuration
 
@@ -22,7 +35,8 @@ TURNSTILE_SECRET=your-secret-key-here
 3. In **Hostname Management**, add your Netlify domain:
    - `westernaverages.xyz` (your production domain)
    - `westernaverages.netlify.app` (if you want to test on Netlify subdomain)
-   - `localhost` (for local development - optional)
+   - Do not add `localhost` to the production widget. Use Cloudflare's test keys
+     or a separate development widget instead.
 
 ## Troubleshooting
 
@@ -37,5 +51,7 @@ TURNSTILE_SECRET=your-secret-key-here
 - Widget may still render but verification will fail
 
 ### Testing Locally
-- Add `localhost` to Cloudflare Turnstile hostname list
-- Or test on your production domain after deployment
+- Use Cloudflare's documented test site key and secret, or a separate
+  development widget restricted to `localhost`.
+- Keep development and production widgets separate so a development token can
+  never satisfy the production hostname allowlist.

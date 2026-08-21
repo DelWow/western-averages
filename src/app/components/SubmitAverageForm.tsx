@@ -57,7 +57,12 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
       return;
     }
 
-    if (turnstileSiteKey && !turnstileToken) {
+    if (!turnstileSiteKey) {
+      setError('Submissions are temporarily unavailable');
+      return;
+    }
+
+    if (!turnstileToken) {
       setError('Please complete the verification challenge');
       return;
     }
@@ -241,23 +246,21 @@ export default function SubmitAverageForm({ courseId, onSuccess }: SubmitAverage
           </div>
         </div>
 
-        {turnstileSiteKey && (
-          <Turnstile
-            ref={turnstileRef}
-            siteKey={turnstileSiteKey}
-            action="turnstile-spin-v2"
-            onVerify={handleTurnstileVerify}
-            onError={resetTurnstile}
-            onExpire={handleTurnstileExpire}
-            className="mx-auto"
-          />
-        )}
+        <Turnstile
+          ref={turnstileRef}
+          siteKey={turnstileSiteKey}
+          action="turnstile-spin-v2"
+          onVerify={handleTurnstileVerify}
+          onError={resetTurnstile}
+          onExpire={handleTurnstileExpire}
+          className="mx-auto"
+        />
 
         <button
           type="submit"
-          disabled={isSubmitting || success || (!!turnstileSiteKey && !turnstileToken)}
+          disabled={isSubmitting || success || !turnstileSiteKey || !turnstileToken}
           className={`w-full bg-[#4F2683] text-white px-4 py-2.5 text-sm font-medium hover:bg-[#3D1E66] transition-colors ${
-            isSubmitting || success || (!!turnstileSiteKey && !turnstileToken) ? 'opacity-60 cursor-not-allowed' : ''
+            isSubmitting || success || !turnstileSiteKey || !turnstileToken ? 'opacity-60 cursor-not-allowed' : ''
           }`}
         >
           {isSubmitting ? (

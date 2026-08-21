@@ -5,13 +5,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, run the development server:
 
 ```bash
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -64,8 +59,13 @@ This project is configured to deploy on Netlify using the Next.js Runtime.
    - Add the following variables:
      - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
      - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+     - `SUPABASE_SERVICE_ROLE_KEY` - Server-only key used by protected API routes
      - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` - Your Cloudflare Turnstile site key
      - `TURNSTILE_SECRET` - Your Cloudflare Turnstile secret key
+     - `TURNSTILE_ALLOWED_HOSTNAMES` - Exact comma-separated widget hostnames
+     - `ALLOWED_ORIGINS` - Exact comma-separated browser origins allowed to post
+     - `ABUSE_PREVENTION_SECRET` - A random server-only value (32+ characters)
+     - `ANALYTICS_SECRET` - A different random server-only value (32+ characters)
 
 5. **Deploy**
    - Click "Deploy site"
@@ -93,8 +93,13 @@ This project is configured to deploy on Netlify using the Next.js Runtime.
    ```bash
    netlify env:set NEXT_PUBLIC_SUPABASE_URL "your-supabase-url"
    netlify env:set NEXT_PUBLIC_SUPABASE_ANON_KEY "your-supabase-anon-key"
+   netlify env:set SUPABASE_SERVICE_ROLE_KEY "your-service-role-key"
    netlify env:set NEXT_PUBLIC_TURNSTILE_SITE_KEY "your-turnstile-site-key"
    netlify env:set TURNSTILE_SECRET "your-turnstile-secret-key"
+   netlify env:set TURNSTILE_ALLOWED_HOSTNAMES "westernaverages.xyz"
+   netlify env:set ALLOWED_ORIGINS "https://westernaverages.xyz"
+   netlify env:set ABUSE_PREVENTION_SECRET "a-random-value-at-least-32-characters-long"
+   netlify env:set ANALYTICS_SECRET "a-different-random-value-at-least-32-characters"
    ```
 
 ### Post-Deployment
@@ -141,11 +146,27 @@ daily, rolling seven-day, and all-time totals at
 `http://localhost:3000/analytics`. The dashboard intentionally redirects on the
 deployed site.
 
-Before deploying this feature, run
-`supabase/migrations/20260730000000_add_daily_visit_tracking.sql` in the
-Supabase SQL editor (or apply it with the Supabase CLI). The tracker uses a
-random ID stored in the browser; it does not collect IP addresses or account
-information.
+For an existing production site, apply the additive `20260821000000` migration,
+deploy and smoke-test this application, then apply the restrictive
+`20260821000001` migration. A fresh environment can apply every migration in
+timestamp order before its first deploy.
+The hardened tracker uses a signed, HTTP-only random browser cookie and stores
+only keyed identifiers. It does not store raw IP addresses or account data.
+The final security migration also makes visit recording idempotent, rate-limits
+new identifiers, prevents direct anonymous RPC access, and restricts public
+student-average reads to safe projections.
+
+See `docs/SECURITY.md` for the required deployment order and verification steps.
+
+The Netlify and Docker production runtimes use Node.js 24. For Docker, pass the
+configured `NEXT_PUBLIC_*` values as build arguments and inject every
+server-only secret (`SUPABASE_SERVICE_ROLE_KEY`, `TURNSTILE_SECRET`,
+`ABUSE_PREVENTION_SECRET`, and `ANALYTICS_SECRET`) only when the container runs.
+Also inject `ALLOWED_ORIGINS` and `TURNSTILE_ALLOWED_HOSTNAMES`. A Docker deploy
+must sit behind a trusted reverse proxy that discards inbound
+`X-Forwarded-For`, writes the canonical client address, and sets
+`TRUST_PROXY_HEADERS=true`; otherwise protected POST endpoints intentionally
+fail closed.
 
 ## Deploy on Vercel
 

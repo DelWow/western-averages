@@ -232,8 +232,7 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
   return (
     <div 
       ref={containerRef} 
-      className={`turnstile-container max-w-full ${className}`}
-      style={{ minHeight: '65px' }}
+      className={`turnstile-container min-h-[65px] max-w-full ${className}`}
       data-testid="turnstile-container"
     >
       {!isLoaded && (
