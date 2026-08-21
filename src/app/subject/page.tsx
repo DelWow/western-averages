@@ -620,7 +620,7 @@ function SubjectPageContent() {
         <div className="container mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-sm text-white/80">
-              Western University Course Averages
+              © 2026 Western University Course Averages
             </div>
             <a 
               href="https://www.linkedin.com/in/annas-amar/" 

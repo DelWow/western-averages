@@ -74,7 +74,7 @@ export default function NotFound() {
 
       <footer className="mt-12 bg-[#4F2683] py-6 text-white">
         <div className="container mx-auto px-4 text-center text-sm text-white/80 sm:px-6">
-          Western University Course Averages
+          © 2026 Western University Course Averages
         </div>
       </footer>
     </div>

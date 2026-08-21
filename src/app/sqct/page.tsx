@@ -98,7 +98,7 @@ export default function SqctPage() {
 
       <footer className="bg-[#4F2683] text-white mt-12 py-6">
         <div className="container mx-auto px-4 sm:px-6 text-center text-sm text-white/80">
-          Western University Course Averages
+          © 2026 Western University Course Averages
         </div>
       </footer>
     </div>
