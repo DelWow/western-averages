@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Breadcrumbs from '../../components/Breadcrumbs';
 import Header from '../../components/Header';
 import SubmitAverageForm from '../../components/SubmitAverageForm';
 import UnverifiedAveragesSection from '../../components/UnverifiedAveragesSection';
@@ -150,16 +151,17 @@ export default function CourseDetailPage() {
       <Header />
       
       <main className="container mx-auto px-4 py-6 sm:px-6 sm:py-8">
-        {/* Breadcrumb */}
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-[#4F2683] mb-6 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to All Courses
-        </Link>
+        <Breadcrumbs
+          items={[
+            { label: 'All Courses', href: '/' },
+            {
+              label: course.department,
+              href: `/subject?subject=${encodeURIComponent(course.department)}`,
+            },
+            { label: course.code },
+          ]}
+          className="mb-6"
+        />
 
         {/* Course Header */}
         <div className="bg-white border border-gray-200 mb-6">

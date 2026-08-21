@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Breadcrumbs from './components/Breadcrumbs';
 import Header from './components/Header';
 
 export default function NotFound() {
@@ -8,26 +9,13 @@ export default function NotFound() {
 
       <main className="container mx-auto flex-1 px-4 py-10 sm:px-6 sm:py-16">
         <div className="mx-auto max-w-4xl">
-          <Link
-            href="/"
-            className="mb-8 inline-flex items-center gap-2 text-sm text-gray-600 transition-colors hover:text-[#4F2683]"
-          >
-            <svg
-              aria-hidden="true"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0 7-7m-7 7h18"
-              />
-            </svg>
-            Back to all courses
-          </Link>
+          <Breadcrumbs
+            items={[
+              { label: 'All Courses', href: '/' },
+              { label: 'Page not found' },
+            ]}
+            className="mb-8"
+          />
 
           <div className="border border-gray-200">
             <div className="h-1 bg-[#4F2683]" />

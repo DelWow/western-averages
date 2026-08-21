@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Breadcrumbs from '../components/Breadcrumbs';
 import Header from '../components/Header';
 import ClassCard from '../components/ClassCard';
 import CourseListItem from '../components/CourseListItem';
@@ -49,6 +50,10 @@ function SubjectPageContent() {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   const [subjectSearch, setSubjectSearch] = useState('');
+
+  useEffect(() => {
+    setSelectedSubject(selectedSubjectParam || '');
+  }, [selectedSubjectParam]);
 
   useEffect(() => {
     async function fetchData() {
@@ -160,7 +165,6 @@ function SubjectPageContent() {
         if (selectedSubjectParam) {
           const filtered = coursesWithUnverified.filter(c => c.department === selectedSubjectParam);
           setFilteredCourses(filtered);
-          setSelectedSubject(selectedSubjectParam);
         }
       } catch (error) {
         console.error('Error fetching courses:', error);
@@ -345,6 +349,17 @@ function SubjectPageContent() {
       <Header />
       
       <main className="container mx-auto px-4 py-6 sm:px-6 sm:py-8">
+        {selectedSubject && (
+          <Breadcrumbs
+            items={[
+              { label: 'All Courses', href: '/' },
+              { label: 'Browse by Subject', href: '/subject' },
+              { label: selectedSubject },
+            ]}
+            className="mb-6"
+          />
+        )}
+
         {/* Notice Banner */}
         <div className="mb-6 bg-amber-50 border-l-4 border-amber-400 p-3 sm:p-4">
           <div className="flex gap-3">
