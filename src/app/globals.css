@@ -4,9 +4,6 @@
   /* Official Western University Colors */
   --western-purple: #4F2683;
   --western-purple-dark: #3D1E66;
-  --western-purple-light: #6B3FA0;
-  --western-gray: #4A4A4A;
-  --western-light-gray: #F5F5F5;
   
   --background: #ffffff;
   --foreground: #1a1a1a;
@@ -60,23 +57,6 @@ h1, h2, h3 {
   line-height: 1.2;
 }
 
-/* Western Purple overrides */
-.bg-western {
-  background-color: var(--western-purple);
-}
-
-.bg-western-dark {
-  background-color: var(--western-purple-dark);
-}
-
-.text-western {
-  color: var(--western-purple);
-}
-
-.border-western {
-  border-color: var(--western-purple);
-}
-
 /* Custom scrollbar - subtle */
 ::-webkit-scrollbar {
   width: 8px;
@@ -104,34 +84,6 @@ h1, h2, h3 {
 /* Links */
 a {
   transition: color 0.15s ease;
-}
-
-/* Buttons */
-.btn-western {
-  background-color: var(--western-purple);
-  color: white;
-  transition: background-color 0.15s ease;
-}
-
-.btn-western:hover {
-  background-color: var(--western-purple-dark);
-}
-
-/* Card base */
-.card {
-  background: white;
-  border: 1px solid #e5e5e5;
-  transition: box-shadow 0.15s ease;
-}
-
-.card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-/* Table styles */
-.table-header {
-  background-color: var(--western-light-gray);
-  border-bottom: 2px solid var(--western-purple);
 }
 
 /* Grade colors - more muted, academic */

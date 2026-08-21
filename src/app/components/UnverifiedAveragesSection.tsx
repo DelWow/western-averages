@@ -5,13 +5,10 @@ import { createClient } from '@/lib/supabase';
 
 interface StudentAverage {
   id: string;
-  course_id: number;
   grade: number;
   term: 'fall' | 'winter' | 'summer' | null;
   year: number | null;
   created_at: string;
-  user_ip: string | null;
-  user_agent: string | null;
 }
 
 interface AverageStats {
@@ -59,7 +56,7 @@ export default function UnverifiedAveragesSection({
           }
           const { data: submissions, error: submissionsError } = await supabase
             .from('student_averages')
-            .select('*')
+            .select('id, grade, term, year, created_at')
             .eq('course_id', courseId)
             .order('created_at', { ascending: false });
 
@@ -90,7 +87,7 @@ export default function UnverifiedAveragesSection({
           
           const { data: submissions, error: submissionsError } = await supabase
             .from('student_averages')
-            .select('*')
+            .select('id, grade, term, year, created_at')
             .eq('course_id', courseId)
             .order('created_at', { ascending: false })
             .limit(showAll ? 50 : 10);

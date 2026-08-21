@@ -17,7 +17,6 @@ interface Course {
   level: number;
   avg_grade: number | null;
   sqct_grade: string | number | null;
-  created_at: string;
 }
 
 type SortOption =
@@ -50,7 +49,7 @@ export default function Home() {
         while (true) {
           const { data, error } = await supabase
             .from('courses')
-            .select('*')
+            .select('id, code, name, department, level, avg_grade, sqct_grade')
             .order('created_at', { ascending: false })
             .range(from, from + pageSize - 1);
 

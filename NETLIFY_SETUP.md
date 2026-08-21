@@ -8,12 +8,12 @@
 
 ```
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=your-site-key-here
-TURNSTILE_SECRET_KEY=your-secret-key-here
+TURNSTILE_SECRET=your-secret-key-here
 ```
 
 **Important:** 
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` must start with `NEXT_PUBLIC_` to be accessible in client components
-- `TURNSTILE_SECRET_KEY` should NOT have `NEXT_PUBLIC_` prefix (server-only)
+- `TURNSTILE_SECRET` should NOT have `NEXT_PUBLIC_` prefix (server-only)
 
 ## Cloudflare Turnstile Hostname Configuration
 
@@ -39,4 +39,3 @@ TURNSTILE_SECRET_KEY=your-secret-key-here
 ### Testing Locally
 - Add `localhost` to Cloudflare Turnstile hostname list
 - Or test on your production domain after deployment
-

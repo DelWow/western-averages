@@ -40,7 +40,7 @@ export default function CourseDetailPage() {
         const supabase = createClient();
         const { data, error: fetchError } = await supabase
           .from('courses')
-          .select('*')
+          .select('id, code, name, department, level, avg_grade, sqct_grade, created_at')
           .eq('id', courseId)
           .single();
 

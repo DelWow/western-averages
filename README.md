@@ -64,8 +64,8 @@ This project is configured to deploy on Netlify using the Next.js Runtime.
    - Add the following variables:
      - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
      - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
-     - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` - Your Cloudflare Turnstile site key (optional, for bot protection)
-     - `TURNSTILE_SECRET_KEY` - Your Cloudflare Turnstile secret key (optional, for bot protection)
+     - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` - Your Cloudflare Turnstile site key
+     - `TURNSTILE_SECRET` - Your Cloudflare Turnstile secret key
 
 5. **Deploy**
    - Click "Deploy site"
@@ -94,7 +94,7 @@ This project is configured to deploy on Netlify using the Next.js Runtime.
    netlify env:set NEXT_PUBLIC_SUPABASE_URL "your-supabase-url"
    netlify env:set NEXT_PUBLIC_SUPABASE_ANON_KEY "your-supabase-anon-key"
    netlify env:set NEXT_PUBLIC_TURNSTILE_SITE_KEY "your-turnstile-site-key"
-   netlify env:set TURNSTILE_SECRET_KEY "your-turnstile-secret-key"
+   netlify env:set TURNSTILE_SECRET "your-turnstile-secret-key"
    ```
 
 ### Post-Deployment
@@ -123,17 +123,16 @@ This project includes Cloudflare Turnstile for bot protection on forms. To enabl
    - Add the following variables:
      ```
      NEXT_PUBLIC_TURNSTILE_SITE_KEY=your-site-key-here
-     TURNSTILE_SECRET_KEY=your-secret-key-here
+     TURNSTILE_SECRET=your-secret-key-here
      ```
    - For production (Netlify), add these in the Netlify dashboard under Environment variables
 
 3. **How It Works**
-   - Turnstile widgets will automatically appear on forms (`SubmitAverageForm` and `AddClassForm`)
+   - The Turnstile widget automatically appears on `SubmitAverageForm`
    - Users must complete the verification challenge before submitting
-   - Tokens are verified server-side via `/api/turnstile/verify`
-   - If Turnstile keys are not set, forms will work without verification (graceful degradation)
+   - Tokens are verified server-side when the form posts to `/api/averages`
 
-**Note:** Turnstile is optional. If you don't set the environment variables, the forms will still work without bot protection.
+Both Turnstile variables are required for course-average submissions.
 
 ## Daily and weekly user analytics
 

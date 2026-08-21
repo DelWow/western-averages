@@ -6,10 +6,6 @@ npm-debug.log*
 .env
 .env.*
 !.env.example
-terraform
-.terraform
-*.tfstate
-*.tfstate.*
 INTERVIEW_PREP.md
 README.md
 NETLIFY_SETUP.md

@@ -18,7 +18,6 @@ interface Course {
   avg_grade: number | null;
   sqct_grade: string | number | null;
   unverified_average: number | null;
-  created_at: string;
 }
 
 interface SubjectWithCount {
@@ -55,14 +54,14 @@ function SubjectPageContent() {
     async function fetchData() {
       try {
         const supabase = createClient();
-        let allCourses: Course[] = [];
+        let allCourses: Omit<Course, 'unverified_average'>[] = [];
         let from = 0;
         const pageSize = 1000;
         
         while (true) {
           const { data, error } = await supabase
             .from('courses')
-            .select('*')
+            .select('id, code, name, department, level, avg_grade, sqct_grade')
             .order('created_at', { ascending: false })
             .range(from, from + pageSize - 1);
 

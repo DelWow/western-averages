@@ -50,12 +50,6 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Debug: Log component mount
-  useEffect(() => {
-    console.log('=== Turnstile Component Mounted ===');
-    console.log('Site Key received:', siteKey ? `${siteKey.substring(0, 10)}...` : 'EMPTY');
-  }, [siteKey]);
-
   useEffect(() => {
     // Check if script is already loaded (from Next.js Script component in layout)
     if (window.turnstile) {
@@ -162,12 +156,10 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
       }
 
       try {
-        console.log('Turnstile: Rendering widget with site key:', siteKey.substring(0, 10) + '...');
         const widgetId = window.turnstile.render(containerRef.current, {
           sitekey: siteKey,
           action,
           callback: (token: string) => {
-            console.log('Turnstile: Verification successful');
             setError(null); // Clear any previous errors
             onVerify(token);
           },
@@ -189,7 +181,6 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(({
           size,
         });
         widgetIdRef.current = widgetId;
-        console.log('Turnstile: Widget rendered successfully with ID:', widgetId);
       } catch (e) {
         setError('Failed to render Turnstile widget');
         console.error('Turnstile render error:', e);
