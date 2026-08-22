@@ -46,3 +46,8 @@ next-env.d.ts
 
 # md files
 
+# graphify
+/graphify-out/
+/.codex/skills/graphify/
+/.codex/hooks.json
+/AGENTS.md
