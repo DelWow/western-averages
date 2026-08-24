@@ -1,9 +1,5 @@
-import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+import { createHmac } from 'node:crypto';
 import { isIP } from 'node:net';
-
-const VISITOR_COOKIE_VERSION = 'v1';
-const VISITOR_ID_PATTERN = /^[0-9a-f-]{36}$/i;
-const SHA256_HEX_PATTERN = /^[0-9a-f]{64}$/;
 
 type SecurityEnvironment = Record<string, string | undefined>;
 
@@ -208,46 +204,6 @@ export function keyedIdentifier(
   return createHmac('sha256', secret)
     .update(`${purpose}\0${value}`)
     .digest('hex');
-}
-
-function visitorCookieSignature(secret: string, visitorId: string): string {
-  return keyedIdentifier(secret, 'visitor-cookie-signature', visitorId);
-}
-
-export function createVisitorCookie(secret: string): {
-  value: string;
-  visitorId: string;
-} {
-  const visitorId = randomUUID();
-  const signature = visitorCookieSignature(secret, visitorId);
-  return {
-    value: `${VISITOR_COOKIE_VERSION}.${visitorId}.${signature}`,
-    visitorId,
-  };
-}
-
-export function verifyVisitorCookie(
-  value: string | undefined,
-  secret: string,
-): string | null {
-  if (!value) return null;
-  const [version, visitorId, providedSignature, extra] = value.split('.');
-  if (
-    extra !== undefined ||
-    version !== VISITOR_COOKIE_VERSION ||
-    !VISITOR_ID_PATTERN.test(visitorId ?? '') ||
-    !SHA256_HEX_PATTERN.test(providedSignature ?? '')
-  ) {
-    return null;
-  }
-
-  const expectedSignature = visitorCookieSignature(secret, visitorId);
-  const expected = Buffer.from(expectedSignature, 'hex');
-  const provided = Buffer.from(providedSignature, 'hex');
-
-  return expected.length === provided.length && timingSafeEqual(expected, provided)
-    ? visitorId
-    : null;
 }
 
 export interface TurnstileVerificationResult {

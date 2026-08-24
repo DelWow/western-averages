@@ -115,5 +115,3 @@ requests do not appear.
   device/browser details, approximate location, and network-derived data. Keep
   the site's privacy notice current and add a consent mechanism if required by
   the laws and policies applicable to the site's visitors.
-- The pre-existing first-party daily visit counter remains separate from GA4
-  and Clarity.

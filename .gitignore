@@ -20,9 +20,6 @@
 # production
 /build
 
-# local-only analytics dashboard
-/src/app/analytics/
-
 # misc
 .DS_Store
 *.pem

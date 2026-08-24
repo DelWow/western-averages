@@ -94,7 +94,6 @@ export async function POST(request: NextRequest) {
     [
       turnstileSecret,
       process.env.SUPABASE_SERVICE_ROLE_KEY,
-      process.env.ANALYTICS_SECRET,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
     ],

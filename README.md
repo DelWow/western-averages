@@ -65,7 +65,6 @@ This project is configured to deploy on Netlify using the Next.js Runtime.
      - `TURNSTILE_ALLOWED_HOSTNAMES` - Exact comma-separated widget hostnames
      - `ALLOWED_ORIGINS` - Exact comma-separated browser origins allowed to post
      - `ABUSE_PREVENTION_SECRET` - A random server-only value (32+ characters)
-     - `ANALYTICS_SECRET` - A different random server-only value (32+ characters)
 
 5. **Deploy**
    - Click "Deploy site"
@@ -99,7 +98,6 @@ This project is configured to deploy on Netlify using the Next.js Runtime.
    netlify env:set TURNSTILE_ALLOWED_HOSTNAMES "westernaverages.xyz"
    netlify env:set ALLOWED_ORIGINS "https://westernaverages.xyz"
    netlify env:set ABUSE_PREVENTION_SECRET "a-random-value-at-least-32-characters-long"
-   netlify env:set ANALYTICS_SECRET "a-different-random-value-at-least-32-characters"
    ```
 
 ### Post-Deployment
@@ -139,29 +137,48 @@ This project includes Cloudflare Turnstile for bot protection on forms. To enabl
 
 Both Turnstile variables are required for course-average submissions.
 
-## Daily and weekly user analytics
+## Analytics
 
-The app records one anonymous browser visit per Toronto calendar day and shows
-daily, rolling seven-day, and all-time totals at
-`http://localhost:3000/analytics`. The dashboard intentionally redirects on the
-deployed site.
+The app uses Google Analytics 4 and Microsoft Clarity in production. See
+`docs/ANALYTICS.md` for configuration and verification instructions. The legacy
+first-party visit counter has been removed.
 
-For an existing production site, apply the additive `20260821000000` migration,
-deploy and smoke-test this application, then apply the restrictive
-`20260821000001` migration. A fresh environment can apply every migration in
-timestamp order before its first deploy.
-The hardened tracker uses a signed, HTTP-only random browser cookie and stores
-only keyed identifiers. It does not store raw IP addresses or account data.
-The final security migration also makes visit recording idempotent, rate-limits
-new identifiers, prevents direct anonymous RPC access, and restricts public
-student-average reads to safe projections.
+For an existing production site, apply all Supabase migrations in timestamp
+order. Migration `20260824000000` removes the legacy first-party analytics
+tables and their stored visit identifiers.
+
+### Automated Supabase migrations
+
+GitHub Actions applies new files under `supabase/migrations/` to production when
+they are merged or pushed to `main`. The workflow can also be started manually
+from **Actions → Apply Supabase migrations → Run workflow**.
+
+In the GitHub repository, create a `production` environment under **Settings →
+Environments**, then add these environment secrets:
+
+- `SUPABASE_ACCESS_TOKEN`: a personal access token from the Supabase account
+  settings
+- `SUPABASE_DB_PASSWORD`: the production project's database password
+- `SUPABASE_PROJECT_ID`: the project reference shown in the Supabase dashboard
+  URL, such as `abcdefghijklmnopqrst`
+
+The workflow previews pending migrations before applying them and serializes
+runs so two production migration jobs cannot execute concurrently. Do not edit
+the production schema directly after adopting this workflow; commit every
+schema change as a new timestamped migration instead.
+
+If the existing migrations were previously applied through the Supabase SQL
+editor, align the remote migration history once before enabling the workflow.
+Use `supabase migration list` and `supabase migration repair` from a linked local
+checkout; do not mark a migration as applied unless its SQL changes are already
+present in production.
 
 See `docs/SECURITY.md` for the required deployment order and verification steps.
 
 The Netlify and Docker production runtimes use Node.js 24. For Docker, pass the
 configured `NEXT_PUBLIC_*` values as build arguments and inject every
-server-only secret (`SUPABASE_SERVICE_ROLE_KEY`, `TURNSTILE_SECRET`,
-`ABUSE_PREVENTION_SECRET`, and `ANALYTICS_SECRET`) only when the container runs.
+server-only secret (`SUPABASE_SERVICE_ROLE_KEY`, `TURNSTILE_SECRET`, and
+`ABUSE_PREVENTION_SECRET`) only when the container runs.
 Also inject `ALLOWED_ORIGINS` and `TURNSTILE_ALLOWED_HOSTNAMES`. A Docker deploy
 must sit behind a trusted reverse proxy that discards inbound
 `X-Forwarded-For`, writes the canonical client address, and sets

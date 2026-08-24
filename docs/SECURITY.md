@@ -4,10 +4,6 @@
 
 - Anonymous Supabase clients could request stored submitter IP addresses and user
   agents, even though the UI omitted those columns.
-- Anonymous clients could read persistent analytics identifiers and invoke the
-  visit-recording `SECURITY DEFINER` function directly.
-- Attacker-chosen analytics IDs and replayed requests could inflate metrics and
-  grow the analytics table without a serverless-safe bound.
 - Average submissions had no atomic quota or same-course cooldown after a valid
   Turnstile challenge.
 - Turnstile validation did not bind successful tokens to an exact hostname and
@@ -27,13 +23,15 @@ while the new release is being verified:
 
 1. Apply `20260821000000_harden_public_endpoints.sql`. This additive phase
    creates the new RPCs and limits but leaves the legacy API available.
-2. Set the server-only environment values below. Generate independent random
-   values with at least 32 characters for the two application secrets.
+2. Set the server-only environment values below. Generate a random value with
+   at least 32 characters for the application secret.
 3. Deploy the updated application.
-4. Smoke-test course reads, average submission, and analytics on the new deploy.
+4. Smoke-test course reads and average submission on the new deploy.
 5. Apply `20260821000001_lock_down_public_access.sql`. This phase revokes the
    vulnerable anonymous table/RPC access and removes legacy RLS policies.
-6. Run the verification checks below.
+6. Apply `20260824000000_remove_first_party_analytics.sql` to remove the legacy
+   visit counter, its RPCs, and its stored identifiers.
+7. Run the verification checks below.
 
 On a fresh environment where the base application schema has already been
 provisioned, all migrations may be applied in timestamp order before the first
@@ -47,7 +45,6 @@ Required or recommended production values:
 ALLOWED_ORIGINS=https://westernaverages.xyz
 TURNSTILE_ALLOWED_HOSTNAMES=westernaverages.xyz
 ABUSE_PREVENTION_SECRET=<independent random value, 32+ characters>
-ANALYTICS_SECRET=<different independent random value, 32+ characters>
 ```
 
 Netlify also supplies its canonical `URL` and deploy-preview URL to the exact
@@ -63,7 +60,7 @@ enable it only when a trusted reverse proxy removes every inbound
 ## Controls now enforced
 
 - Public table reads are replaced by narrow, explicitly granted RPCs. Raw IP,
-  user-agent, abuse-fingerprint, and analytics-identifier data are not returned.
+  user-agent, and abuse-fingerprint data are not returned.
 - Successful average submissions are limited to five per browser fingerprint
   per hour, 30 per network per hour, and one matching course/term/year
   submission per browser fingerprint per 24 hours.
@@ -73,10 +70,6 @@ enable it only when a trusted reverse proxy removes every inbound
   bot limits at the CDN/WAF where available.
 - Rate checks and inserts run in one PostgreSQL transaction under advisory locks,
   so parallel serverless workers cannot race past them.
-- New analytics cookies are signed, HTTP-only, SameSite=Lax, and Secure in
-  production. At most 100 new visitor cookies can be issued per network daily,
-  and an existing visitor records at most one row per Toronto day. Failed
-  best-effort analytics requests are not retried on every client navigation.
 - Public recent-submission data omits stable row identifiers and buckets the
   submission time to the Toronto calendar date to reduce correlation risk.
 - Only Netlify's platform client-IP header is trusted on Netlify. Generic proxy
@@ -104,8 +97,8 @@ After the lockdown migration and deploy, verify with the anonymous key while
 suppressing response bodies:
 
 - Selecting `user_ip` or `user_agent` from `student_averages` must be non-2xx.
-- Selecting `visitor_id` from `daily_visits` must be non-2xx.
-- Calling the old one-argument `record_daily_visit` RPC must be non-2xx.
+- Selecting from the removed `daily_visits` table and calling either legacy
+  `record_daily_visit` signature must return a missing-relation/function error.
 - Intended course reads and the three `get_public_*` RPCs must still succeed.
 - A cross-origin or `text/plain` submission must return `403` or `415` before
   Turnstile is contacted.
