@@ -15,7 +15,6 @@ SUPABASE_SERVICE_ROLE_KEY=your-server-only-supabase-service-role-key
 TURNSTILE_ALLOWED_HOSTNAMES=westernaverages.xyz
 ALLOWED_ORIGINS=https://westernaverages.xyz
 ABUSE_PREVENTION_SECRET=generate-an-independent-random-value-of-32-or-more-characters
-ANALYTICS_SECRET=generate-a-different-random-value-of-32-or-more-characters
 ```
 
 **Important:** 
@@ -25,7 +24,7 @@ ANALYTICS_SECRET=generate-a-different-random-value-of-32-or-more-characters
 - `TURNSTILE_SECRET` should NOT have `NEXT_PUBLIC_` prefix (server-only)
 - `SUPABASE_SERVICE_ROLE_KEY` is server-only and must never use a
   `NEXT_PUBLIC_` prefix
-- Keep both abuse-prevention secrets server-only and use different random values
+- Keep the abuse-prevention secret server-only and independent from other secrets
 - Use exact origins and hostnames; wildcards and suffix matching are not supported
 
 ## Cloudflare Turnstile Hostname Configuration

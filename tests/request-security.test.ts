@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  createVisitorCookie,
   getAllowedTurnstileHostnames,
   getIndependentServerSecret,
   getServerSecret,
@@ -12,7 +11,6 @@ import {
   readJsonBody,
   RequestBodyError,
   sanitizeUserAgent,
-  verifyVisitorCookie,
 } from '../src/lib/request-security';
 import { buildContentSecurityPolicy } from '../src/lib/content-security-policy';
 
@@ -131,17 +129,6 @@ test('Turnstile acceptance binds both action and exact hostname', () => {
     ),
     false,
   );
-});
-
-test('visitor cookies are signed and tampering is detected', () => {
-  const secret = 'a'.repeat(32);
-  const cookie = createVisitorCookie(secret);
-  assert.equal(verifyVisitorCookie(cookie.value, secret), cookie.visitorId);
-
-  const replacement = cookie.value.endsWith('0') ? '1' : '0';
-  const tampered = `${cookie.value.slice(0, -1)}${replacement}`;
-  assert.equal(verifyVisitorCookie(tampered, secret), null);
-  assert.equal(verifyVisitorCookie(cookie.value, 'b'.repeat(32)), null);
 });
 
 test('keyed identifiers are fixed length and purpose-separated', () => {

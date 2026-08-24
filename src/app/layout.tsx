@@ -5,7 +5,6 @@ import Script from "next/script";
 import { headers } from "next/headers";
 import "./globals.css";
 import MicrosoftClarity from "./components/MicrosoftClarity";
-import VisitTracker from './components/VisitTracker';
 
 const sourceSans = Source_Sans_3({
   variable: "--font-source-sans",
@@ -63,7 +62,6 @@ export default async function RootLayout({
           strategy="lazyOnload"
           nonce={nonce}
         />
-        <VisitTracker />
         {children}
         {validGaMeasurementId && (
           <GoogleAnalytics gaId={validGaMeasurementId} nonce={nonce} />

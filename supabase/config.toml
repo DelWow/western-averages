@@ -1,0 +1,3 @@
+# Local CLI identifier only; the production project is selected by the
+# SUPABASE_PROJECT_ID GitHub secret during deployment.
+project_id = "western-averages"
