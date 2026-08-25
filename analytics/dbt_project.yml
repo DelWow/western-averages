@@ -1,0 +1,25 @@
+name: western_averages_analytics
+version: 1.0.0
+config-version: 2
+
+profile: western_averages
+require-dbt-version: [">=1.11.0", "<1.12.0"]
+
+model-paths: ["models"]
+test-paths: ["tests"]
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  source_schema: public
+  min_public_sample_size: 5
+
+models:
+  western_averages_analytics:
+    staging:
+      +materialized: view
+      +schema: staging
+      +tags: ["internal"]
+    marts:
+      +materialized: view
+      +schema: marts
+      +tags: ["tableau", "privacy_safe"]

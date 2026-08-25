@@ -143,6 +143,12 @@ The app uses Google Analytics 4 and Microsoft Clarity in production. See
 `docs/ANALYTICS.md` for configuration and verification instructions. The legacy
 first-party visit counter has been removed.
 
+Application data is also modeled by a privacy-safe dbt project for portfolio
+analytics and Tableau. It creates tested aggregates for submission volume,
+course grade quality, and department summaries without exposing individual
+submissions. See `docs/DBT_ANALYTICS.md` for local setup, production permissions,
+and dashboard guidance.
+
 For an existing production site, apply all Supabase migrations in timestamp
 order. Migration `20260824000000` removes the legacy first-party analytics
 tables and their stored visit identifiers.

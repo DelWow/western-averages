@@ -1,0 +1,17 @@
+version: 2
+
+exposures:
+  - name: western_averages_tableau_dashboard
+    label: Western Averages Data Quality Dashboard
+    type: dashboard
+    maturity: medium
+    description: >-
+      Privacy-safe Tableau dashboard for submission coverage, course sample
+      quality, and aggregate grade trends. It must connect only to mart views.
+    depends_on:
+      - ref('mart_course_grade_quality')
+      - ref('mart_submission_volume')
+      - ref('mart_department_overview')
+    owner:
+      name: Western Averages Maintainer
+      email: analytics@westernaverages.xyz

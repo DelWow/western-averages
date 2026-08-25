@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: stg_courses
+    description: Clean course catalogue with stable analytical column names.
+    columns:
+      - name: course_id
+        data_tests: [not_null, unique]
+      - name: course_code
+        data_tests: [not_null, unique]
+      - name: department
+        data_tests: [not_null]
+
+  - name: stg_student_averages
+    description: >-
+      Privacy-minimized submissions containing only course, grade, term, year,
+      and timestamp fields required by aggregate models.
+    columns:
+      - name: submission_id
+        data_tests: [not_null, unique]
+      - name: course_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_courses')
+                field: course_id
+      - name: grade
+        data_tests: [not_null]
+      - name: term
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [fall, winter, summer]
+      - name: academic_year
+        data_tests: [not_null]
+      - name: submitted_at
+        data_tests: [not_null]
