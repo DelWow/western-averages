@@ -1,0 +1,52 @@
+version: 2
+
+sources:
+  - name: western_averages
+    description: >-
+      Operational Supabase tables. The dbt role receives read-only access to
+      only these two application tables.
+    schema: "{{ var('source_schema') }}"
+    tables:
+      - name: courses
+        description: Western course catalogue and published course-level metrics.
+        columns:
+          - name: id
+            data_tests:
+              - not_null
+              - unique
+          - name: code
+            data_tests:
+              - not_null
+              - unique
+          - name: department
+            data_tests:
+              - not_null
+
+      - name: student_averages
+        description: >-
+          Submitted course averages. Staging selects only analytical fields and
+          intentionally excludes network, browser, and abuse-prevention data.
+        columns:
+          - name: id
+            data_tests:
+              - not_null
+              - unique
+          - name: course_id
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('western_averages', 'courses')
+                    field: id
+          - name: grade
+            data_tests:
+              - not_null
+          - name: term
+            data_tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: [fall, winter, summer]
+          - name: created_at
+            data_tests:
+              - not_null

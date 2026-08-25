@@ -70,3 +70,69 @@ jobs:
           --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY"
           --tag western-averages:ci
           .
+
+  analytics:
+    name: Build and test dbt analytics
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: western_averages_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d western_averages_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DBT_POSTGRES_HOST: localhost
+      DBT_POSTGRES_PORT: "5432"
+      DBT_POSTGRES_USER: postgres
+      DBT_POSTGRES_PASSWORD: postgres
+      DBT_POSTGRES_DATABASE: western_averages_ci
+      DBT_POSTGRES_SCHEMA: analytics
+      DBT_POSTGRES_SSLMODE: disable
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: analytics/requirements.txt
+
+      - name: Install dbt
+        run: python -m pip install --requirement analytics/requirements.txt
+
+      - name: Load synthetic analytics fixtures
+        env:
+          PGPASSWORD: postgres
+        run: >-
+          psql
+          --host localhost
+          --username postgres
+          --dbname western_averages_ci
+          --set ON_ERROR_STOP=1
+          --file analytics/ci/bootstrap.sql
+
+      - name: Build and test analytics models
+        run: >-
+          dbt build
+          --project-dir analytics
+          --profiles-dir analytics
+
+      - name: Validate documentation generation
+        run: >-
+          dbt docs generate
+          --project-dir analytics
+          --profiles-dir analytics

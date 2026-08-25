@@ -41,6 +41,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# dbt build artifacts and local credentials
+/analytics/target/
+/analytics/logs/
+/analytics/dbt_packages/
+/analytics/.venv/
+/analytics/profiles.local.yml
+
 # md files
 
 # graphify

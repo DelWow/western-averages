@@ -1,0 +1,62 @@
+version: 2
+
+models:
+  - name: mart_course_grade_quality
+    description: >-
+      One row per course. Submission counts remain visible, while all submitted
+      grade statistics are null until the configured minimum sample size is met.
+    config:
+      meta:
+        contains_individual_records: false
+        tableau_ready: true
+    columns:
+      - name: course_id
+        data_tests: [not_null, unique]
+      - name: course_code
+        data_tests: [not_null, unique]
+      - name: submission_count
+        data_tests: [not_null]
+      - name: sample_status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [no_submissions, insufficient, sufficient]
+      - name: has_sufficient_sample
+        data_tests: [not_null]
+
+  - name: mart_submission_volume
+    description: Broad term-level submission counts with no grades or identifiers.
+    config:
+      meta:
+        contains_individual_records: false
+        tableau_ready: true
+    columns:
+      - name: academic_year
+        data_tests: [not_null]
+      - name: term
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [fall, winter, summer]
+      - name: submission_count
+        data_tests: [not_null]
+
+  - name: mart_department_overview
+    description: >-
+      Department-level coverage and aggregate grades. Grade statistics are null
+      until the department reaches the configured minimum sample size.
+    config:
+      meta:
+        contains_individual_records: false
+        tableau_ready: true
+    columns:
+      - name: department
+        data_tests: [not_null, unique]
+      - name: course_count
+        data_tests: [not_null]
+      - name: submission_count
+        data_tests: [not_null]
+      - name: has_sufficient_sample
+        data_tests: [not_null]

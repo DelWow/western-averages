@@ -1,0 +1,15 @@
+western_averages:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('DBT_POSTGRES_HOST', 'localhost') }}"
+      port: "{{ env_var('DBT_POSTGRES_PORT', '5432') | int }}"
+      user: "{{ env_var('DBT_POSTGRES_USER', 'postgres') }}"
+      password: "{{ env_var('DBT_POSTGRES_PASSWORD') }}"
+      dbname: "{{ env_var('DBT_POSTGRES_DATABASE', 'postgres') }}"
+      schema: "{{ env_var('DBT_POSTGRES_SCHEMA', 'analytics') }}"
+      threads: 4
+      connect_timeout: 10
+      retries: 2
+      sslmode: "{{ env_var('DBT_POSTGRES_SSLMODE', 'require') }}"
