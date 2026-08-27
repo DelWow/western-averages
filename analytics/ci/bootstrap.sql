@@ -10,7 +10,7 @@ create table public.courses (
 );
 
 create table public.student_averages (
-    id bigint primary key,
+    id uuid primary key,
     course_id bigint not null references public.courses (id),
     grade numeric not null,
     term text not null,
