@@ -1,5 +1,5 @@
 select
-    id::bigint as submission_id,
+    id::text as submission_id,
     course_id::bigint as course_id,
     grade::numeric as grade,
     lower(term::text) as term,

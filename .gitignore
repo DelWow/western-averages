@@ -42,6 +42,7 @@ yarn-error.log*
 next-env.d.ts
 
 # dbt build artifacts and local credentials
+/analytics/.venv-py39-backup/
 /analytics/target/
 /analytics/logs/
 /analytics/dbt_packages/
