@@ -33,8 +33,7 @@ type SortOption =
   | 'unverified-low-high'
   | 'unverified-high-low'
   | 'sqct-low-high'
-  | 'sqct-high-low'
-  | 'alphabetical';
+  | 'sqct-high-low';
 
 function SubjectPageContent() {
   const router = useRouter();
@@ -249,9 +248,6 @@ function SubjectPageContent() {
       case 'sqct-high-low': {
         return compareSqctGrades(a.sqct_grade, b.sqct_grade, 'descending');
       }
-      case 'alphabetical': {
-        return a.name.localeCompare(b.name);
-      }
       default:
         return 0;
     }
@@ -265,7 +261,6 @@ function SubjectPageContent() {
     { value: 'unverified-high-low', label: 'Unverified: High to Low' },
     { value: 'sqct-low-high', label: 'SQCT: Low to High' },
     { value: 'sqct-high-low', label: 'SQCT: High to Low' },
-    { value: 'alphabetical', label: 'Alphabetical' },
   ];
 
   const handleSubjectClick = (subjectName: string) => {

@@ -24,9 +24,7 @@ type SortOption =
   | 'avg-low-high'
   | 'avg-high-low'
   | 'sqct-low-high'
-  | 'sqct-high-low'
-  | 'alphabetical'
-  | 'level';
+  | 'sqct-high-low';
 
 export default function Home() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -173,12 +171,6 @@ export default function Home() {
       case 'sqct-high-low': {
         return compareSqctGrades(a.sqct_grade, b.sqct_grade, 'descending');
       }
-      case 'alphabetical': {
-        return a.name.localeCompare(b.name);
-      }
-      case 'level': {
-        return a.level - b.level;
-      }
       default:
         return 0;
     }
@@ -190,8 +182,6 @@ export default function Home() {
     { value: 'avg-high-low', label: 'Verified: High to Low' },
     { value: 'sqct-low-high', label: 'SQCT: Low to High' },
     { value: 'sqct-high-low', label: 'SQCT: High to Low' },
-    { value: 'level', label: 'Course Level' },
-    { value: 'alphabetical', label: 'Alphabetical' },
   ];
 
   const totalPages = Math.ceil(sortedCourses.length / itemsPerPage);
