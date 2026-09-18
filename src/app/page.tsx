@@ -229,10 +229,10 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="flex min-h-screen flex-col bg-white">
       <Header />
       
-      <main className="container mx-auto px-4 py-6 sm:px-6 sm:py-8">
+      <main className="container mx-auto flex-1 px-4 py-6 sm:px-6 sm:py-8">
         {/* Notice Banner */}
         <div className="mb-6 bg-amber-50 border-l-4 border-amber-400 p-3 sm:p-4">
           <div className="flex gap-3">

@@ -311,10 +311,10 @@ function SubjectPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="flex min-h-screen flex-col bg-white">
       <Header />
       
-      <main className="container mx-auto px-4 py-6 sm:px-6 sm:py-8">
+      <main className="container mx-auto flex-1 px-4 py-6 sm:px-6 sm:py-8">
         {selectedSubject && (
           <Breadcrumbs
             items={[
@@ -607,9 +607,9 @@ function SubjectPageContent() {
 export default function SubjectPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-white">
+      <div className="flex min-h-screen flex-col bg-white">
         <Header />
-        <main className="container mx-auto px-4 sm:px-6 py-8">
+        <main className="container mx-auto flex-1 px-4 sm:px-6 py-8">
           <div className="bg-white border border-gray-200 p-12 text-center">
             <div className="animate-spin rounded-full h-10 w-10 border-2 border-gray-200 border-t-[#4F2683] mx-auto mb-4"></div>
             <p className="text-gray-600">Loading...</p>

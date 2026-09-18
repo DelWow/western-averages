@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 
 export default function SqctPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="flex min-h-screen flex-col bg-white">
       <Header />
 
-      <main className="container mx-auto px-4 py-6 sm:px-6 sm:py-12">
+      <main className="container mx-auto flex-1 px-4 py-6 sm:px-6 sm:py-12">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6 sm:mb-8">
             <h1 className="text-3xl sm:text-4xl font-display font-semibold text-gray-900 mb-4">
