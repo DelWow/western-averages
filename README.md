@@ -60,6 +60,8 @@ This project is configured to deploy on Netlify using the Next.js Runtime.
      - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
      - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
      - `SUPABASE_SERVICE_ROLE_KEY` - Server-only key used by protected API routes
+     - `REDIS_URL` - Server-only Redis connection URL for the course catalog cache
+     - `COURSE_CATALOG_CACHE_TTL_SECONDS` - Optional catalog TTL (defaults to 3600)
      - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` - Your Cloudflare Turnstile site key
      - `TURNSTILE_SECRET` - Your Cloudflare Turnstile secret key
      - `TURNSTILE_ALLOWED_HOSTNAMES` - Exact comma-separated widget hostnames
@@ -93,6 +95,8 @@ This project is configured to deploy on Netlify using the Next.js Runtime.
    netlify env:set NEXT_PUBLIC_SUPABASE_URL "your-supabase-url"
    netlify env:set NEXT_PUBLIC_SUPABASE_ANON_KEY "your-supabase-anon-key"
    netlify env:set SUPABASE_SERVICE_ROLE_KEY "your-service-role-key"
+   netlify env:set REDIS_URL "your-redis-connection-url"
+   netlify env:set COURSE_CATALOG_CACHE_TTL_SECONDS "3600"
    netlify env:set NEXT_PUBLIC_TURNSTILE_SITE_KEY "your-turnstile-site-key"
    netlify env:set TURNSTILE_SECRET "your-turnstile-secret-key"
    netlify env:set TURNSTILE_ALLOWED_HOSTNAMES "westernaverages.xyz"
@@ -136,6 +140,19 @@ This project includes Cloudflare Turnstile for bot protection on forms. To enabl
    - Tokens are verified server-side when the form posts to `/api/averages`
 
 Both Turnstile variables are required for course-average submissions.
+
+## Course catalog cache
+
+The home and subject pages load the public course catalog through
+`/api/courses`. The route uses Redis cache-aside with a versioned key, a
+configurable TTL, malformed-entry recovery, and a short distributed lock to
+limit cache stampedes. Responses include `X-Catalog-Cache: HIT`, `MISS`, or
+`BYPASS` for verification.
+
+Set the server-only `REDIS_URL` variable to enable caching. If it is absent, a
+connection fails, or a Redis command times out, the route falls back to
+Supabase. Redis is therefore an optimization rather than a catalog
+availability dependency.
 
 ## Analytics
 

@@ -5,9 +5,9 @@ import Header from './components/Header';
 import ClassCard from './components/ClassCard';
 import CourseListItem from './components/CourseListItem';
 import StatsCard from './components/StatsCard';
-import { createClient } from '@/lib/supabase';
 import { compareSqctGrades } from '@/lib/sqct';
 import { trackEvent } from '@/lib/analytics';
+import { fetchCourseCatalog } from '@/lib/course-catalog-client';
 
 interface Course {
   id: number;
@@ -35,44 +35,12 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   const itemsPerPage = 300;
 
-  // Load courses from Supabase on mount
+  // Load the shared Redis-backed catalog on mount.
   useEffect(() => {
     async function fetchCourses() {
       try {
-        const supabase = createClient();
-        let allCourses: Course[] = [];
-        let from = 0;
-        const pageSize = 1000;
-        
-        while (true) {
-          const { data, error } = await supabase
-            .from('courses')
-            .select('id, code, name, department, level, avg_grade, sqct_grade')
-            .order('created_at', { ascending: false })
-            .range(from, from + pageSize - 1);
-
-          if (error) {
-            console.error('Error fetching courses:', error);
-            break;
-          }
-
-          if (data && data.length > 0) {
-            allCourses = [...allCourses, ...data];
-            from += pageSize;
-            
-            if (data.length < pageSize) {
-              break;
-            }
-          } else {
-            break;
-          }
-        }
-
-        const uniqueCourses = Array.from(
-          new Map(allCourses.map(course => [course.id, course])).values()
-        );
-
-        setCourses(uniqueCourses);
+        const catalog = await fetchCourseCatalog<Course>();
+        setCourses(catalog);
       } catch (error) {
         console.error('Error fetching courses:', error);
       } finally {
