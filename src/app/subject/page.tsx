@@ -9,6 +9,7 @@ import CourseListItem from '../components/CourseListItem';
 import { createClient } from '@/lib/supabase';
 import { compareSqctGrades } from '@/lib/sqct';
 import { trackEvent } from '@/lib/analytics';
+import { fetchCourseCatalog } from '@/lib/course-catalog-client';
 
 interface Course {
   id: number;
@@ -58,37 +59,10 @@ function SubjectPageContent() {
     async function fetchData() {
       try {
         const supabase = createClient();
-        let allCourses: Omit<Course, 'unverified_average'>[] = [];
-        let from = 0;
-        const pageSize = 1000;
-        
-        while (true) {
-          const { data, error } = await supabase
-            .from('courses')
-            .select('id, code, name, department, level, avg_grade, sqct_grade')
-            .order('created_at', { ascending: false })
-            .range(from, from + pageSize - 1);
-
-          if (error) {
-            console.error('Error fetching courses:', error);
-            break;
-          }
-
-          if (data && data.length > 0) {
-            allCourses = [...allCourses, ...data];
-            from += pageSize;
-            
-            if (data.length < pageSize) {
-              break;
-            }
-          } else {
-            break;
-          }
-        }
-
-        const uniqueCourses = Array.from(
-          new Map(allCourses.map(course => [course.id, course])).values()
-        );
+        const uniqueCourses = await fetchCourseCatalog<Omit<
+          Course,
+          'unverified_average'
+        >>();
 
         const courseIdsSet = new Set(uniqueCourses.map(c => c.id));
         const unverifiedAveragesMap = new Map<number, number>();

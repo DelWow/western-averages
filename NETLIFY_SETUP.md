@@ -12,6 +12,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anonymous-key
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=your-site-key-here
 TURNSTILE_SECRET=your-secret-key-here
 SUPABASE_SERVICE_ROLE_KEY=your-server-only-supabase-service-role-key
+REDIS_URL=your-server-only-redis-connection-url
+COURSE_CATALOG_CACHE_TTL_SECONDS=3600
 TURNSTILE_ALLOWED_HOSTNAMES=westernaverages.xyz
 ALLOWED_ORIGINS=https://westernaverages.xyz
 ABUSE_PREVENTION_SECRET=generate-an-independent-random-value-of-32-or-more-characters
@@ -24,6 +26,11 @@ ABUSE_PREVENTION_SECRET=generate-an-independent-random-value-of-32-or-more-chara
 - `TURNSTILE_SECRET` should NOT have `NEXT_PUBLIC_` prefix (server-only)
 - `SUPABASE_SERVICE_ROLE_KEY` is server-only and must never use a
   `NEXT_PUBLIC_` prefix
+- `REDIS_URL` is server-only and may use either `redis://` or `rediss://` as
+  required by the provider. The catalog falls back to Supabase if Redis is not
+  configured or temporarily unavailable.
+- `COURSE_CATALOG_CACHE_TTL_SECONDS` is optional and must be between 60 and
+  86400 seconds. It defaults to 3600 seconds.
 - Keep the abuse-prevention secret server-only and independent from other secrets
 - Use exact origins and hostnames; wildcards and suffix matching are not supported
 
